@@ -1,0 +1,802 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #ECF6FF;
+    color: #333;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1300px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+}
+
+.header {
+    background: #5DADE2;
+    color: white;
+    padding: 40px;
+    text-align: center;
+}
+
+.header h1 { font-size: 2.8rem; margin-bottom: 10px; }
+.header h2 { font-size: 1.4rem; opacity: 0.9; }
+
+/* ==================== LOGO MODIFICADO ==================== */
+/* ==================== LOGO AL LADO IZQUIERDO ==================== */
+.header {
+    background: #5DADE2;
+    color: white;
+    padding: 30px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+}
+
+.logo-container {
+    flex-shrink: 0;
+    margin-right: 40px; /* espacio entre logo y texto */
+}
+
+.logo {
+    height: 90px;
+    width: auto;
+    max-width: 260px;
+    object-fit: contain;
+    background: transparent;
+    padding: 0;
+}
+
+.header-text {
+    text-align: center;
+    flex: 1; /* ocupa todo el espacio disponible */
+}
+
+.header-text h1 {
+    font-size: 2.6rem;
+    margin: 0;
+}
+
+.header-text h2 {
+    font-size: 1.4rem;
+    margin: 8px 0 0 0;
+    opacity: 0.9;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        text-align: center;
+        padding: 30px 20px;
+    }
+
+    .logo-container {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .logo {
+        height: 70px;
+        max-width: 200px;
+    }
+
+    .header-text h1 {
+        font-size: 2.2rem;
+    }
+
+    .header-text h2 {
+        font-size: 1.2rem;
+    }
+}
+/* ========================================================= */
+
+#menu-principal { padding: 60px 20px; text-align: center; }
+#menu-principal h3 { font-size: 2rem; margin-bottom: 50px; color: #2c3e50; }
+
+.botones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.btn-menu {
+    background: white;
+    border: 4px solid #5DADE2;
+    border-radius: 20px;
+    padding: 40px 25px; /* reducido de 60px 30px */
+    font-size: 1.5rem; /* reducido de 1.8rem */
+    font-weight: bold;
+    color: #5DADE2;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(93,173,226,0.2);
+    transition: all 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* reducido de 25px */
+    min-height: 180px; /* para mantener proporción */
+}
+
+.btn-menu:hover {
+    background: #5DADE2;
+    color: white;
+    transform: translateY(-10px);
+}
+
+.btn-menu .icono { 
+    font-size: 4rem; /* reducido de 5rem */
+}
+
+.seccion-oculta { display: none; }
+
+section[class^="seccion-"] { padding: 40px; }
+
+.btn-volver {
+    background: #34495e;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-bottom: 30px;
+}
+
+.btn-primary {
+    background: #5DADE2;
+    color: white;
+    padding: 20px 40px;
+    font-size: 1.5rem;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 30px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 1.1rem;
+}
+
+.busqueda-container, .consulta-container { text-align: center; margin: 40px 0; }
+
+.buscador, .select-sede {
+    width: 100%;
+    max-width: 700px;
+    padding: 18px;
+    font-size: 1.3rem;
+    border: 2px solid #5DADE2;
+    border-radius: 15px;
+    margin: 20px auto;
+    display: inline-block;
+}
+
+#btn-buscar-modificar, #btn-buscar-ver-ficha, #btn-consultar {
+    padding: 18px 40px;
+    font-size: 1.4rem;
+    margin-left: 20px;
+    display: inline-block;
+    width: auto;
+}
+
+.paciente-card {
+    background: #f8fbff;
+    border: 2px solid #5DADE2;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.paciente-card .btn-edit {
+    background: #5DADE2;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* Contenedor para los resúmenes - 3 por fila */
+#resumen-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* 3 por fila en pantallas grandes */
+    gap: 30px;
+    margin-top: 40px;
+}
+
+/* Grid para resúmenes: 3 por fila, cuadros más pequeños */
+#resumen-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 3 por fila en grandes */
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.resumen-sede-card {
+    background: white;
+    border: 3px solid #5DADE2;
+    border-radius: 18px;
+    padding: 18px; /* más pequeño */
+    box-shadow: 0 8px 25px rgba(93,173,226,0.2);
+    text-align: center;
+}
+
+.resumen-sede-card h4 {
+    color: #2c3e50;
+    margin-bottom: 12px;
+    font-size: 1.3rem; /* título más pequeño */
+}
+
+.resumen-sede-card .estadistica-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.resumen-sede-card .estadistica-item {
+    background: #f8fbff;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #5DADE2;
+}
+
+.resumen-sede-card .estadistica-item.total {
+    grid-column: 1 / -1;
+    background: #5DADE2;
+    color: white;
+    font-size: 1.2rem;
+    padding: 15px;
+}
+
+.resumen-sede-card .label {
+    font-size: 1.0rem;
+    opacity: 0.9;
+}
+
+.resumen-sede-card .numero {
+    font-size: 2.0rem; /* números más pequeños */
+    font-weight: bold;
+}
+
+/* En móviles: 1 por fila */
+@media (max-width: 900px) {
+    #resumen-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.estadistica-item .label { display: block; font-size: 1.2rem; margin-bottom: 10px; opacity: 0.9; }
+.estadistica-item .numero { font-size: 2.5rem; font-weight: bold; }
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.ficha-content {
+    max-width: 1000px;
+    width: 95%;
+}
+
+#ficha-detalle {
+    background: #f8fbff;
+    border: 3px solid #5DADE2;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+#ficha-detalle h4 {
+    color: #5DADE2;
+    border-bottom: 2px solid #5DADE2;
+    padding-bottom: 10px;
+    margin: 25px 0 15px 0;
+    font-size: 1.6rem;
+}
+
+#ficha-detalle p {
+    margin: 12px 0;
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+#ficha-detalle strong {
+    color: #2c3e50;
+}
+
+.cerrar-ficha {
+    width: auto;
+    padding: 15px 40px;
+    margin: 0 auto;
+    display: block;
+}
+
+.close-modal, .close-modal-ficha {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    font-size: 35px;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.close-modal:hover, .close-modal-ficha:hover {
+    color: #000;
+}
+
+#mensaje-exito {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #5DADE2;
+    color: white;
+    padding: 18px 40px;
+    border-radius: 15px;
+    font-size: 1.4rem;
+    font-weight: bold;
+    box-shadow: 0 10px 30px rgba(93,173,226,0.4);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.6s;
+}
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #5DADE2, #ECF6FF);
+}
+
+.login-box {
+    background: white;
+    padding: 50px;
+    border-radius: 25px;
+    box-shadow: 0 20px 50px rgba(93,173,226,0.4);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+}
+
+.login-box h1 {
+    font-size: 2.5rem;
+    color: #5DADE2;
+    margin-bottom: 10px;
+}
+
+.login-box h2 {
+    font-size: 1.3rem;
+    color: #34495e;
+    margin-bottom: 40px;
+}
+
+.login-box .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #5DADE2;
+    border-radius: 12px;
+    font-size: 1.2rem;
+}
+/* Mejoras para Ingresar Paciente - Diseño Profesional */
+fieldset.fieldset-profesional {
+    background: white;
+    border: 3px solid #5DADE2;
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 30px rgba(93,173,226,0.15);
+}
+
+fieldset.fieldset-profesional legend {
+    background: #5DADE2;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 15px;
+    font-size: 1.6rem;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(93,173,226,0.3);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    transition: border 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #5DADE2;
+    box-shadow: 0 0 10px rgba(93,173,226,0.3);
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.btn-primary.grande {
+    padding: 22px 50px;
+    font-size: 1.8rem;
+    margin-top: 20px;
+}
+
+.preview-image {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.preview-image img {
+    max-width: 400px;
+    max-height: 300px;
+    border: 4px solid #5DADE2;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(93,173,226,0.3);
+}
+/* Título profesional centrado - Versión equilibrada y elegante */
+.titulo-seccion {
+    text-align: center;
+    margin: 30px 0 40px 0; /* Menos espacio arriba y abajo */
+    padding: 10px 0;
+}
+
+.titulo-seccion h3 {
+    display: inline-block;
+    font-size: 2.4rem; /* Más moderado */
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(to right, #5DADE2, #81D4FA); /* Degradado más suave */
+    padding: 14px 50px; /* Menos padding vertical */
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(93,173,226,0.3); /* Sombra más sutil */
+    letter-spacing: 1px;
+}
+.import-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(93,173,226,0.2);
+    text-align: center;
+}
+
+#import-resultado {
+    padding: 20px;
+    border-radius: 15px;
+    font-size: 1.3rem;
+}
+
+#import-resultado.success {
+    background: #d4edda;
+    color: #155724;
+    border: 2px solid #c3e6cb;
+}
+
+#import-resultado.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 2px solid #f5c6cb;
+}
+/* Estilos para Control de Pagos */
+#lista-pagos {
+    margin-top: 20px;
+}
+
+.pago-card {
+    background: white;
+    border: 2px solid #5DADE2;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(93,173,226,0.1);
+}
+
+.pago-card .info {
+    flex: 1;
+}
+
+.pago-card .info strong {
+    font-size: 1.4rem;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.pago-card .estado-pendiente {
+    background: #fff3cd;
+    color: #856404;
+    padding: 8px 15px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.pago-card .estado-atrasado {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 8px 15px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.pago-card .estado-pagado {
+    background: #d4edda;
+    color: #155724;
+    padding: 8px 15px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.btn-pagar {
+    background: #28a745;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.btn-pagar:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+/* Modal para resumen de pagos en Control de Pagos */
+#pagos-resumen-modal .modal-content {
+    max-width: 900px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+/* Estados de pago en Control de Pagos */
+.estado-pagado {
+    color: #155724;
+    background: #d4edda;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.estado-pendiente {
+    color: #856404;
+    background: #fff3cd;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.estado-atrasado {
+    color: #721c24;
+    background: #f8d7da;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.btn-pagar {
+    background: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.btn-pagar.disabled, .btn-pagar:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+
+
+
+
+
+
+/* Resumen de pagos por sede - cuadros más pequeños y ordenados */
+#resumen-pagos-sedes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* máximo 3-4 por fila */
+    gap: 25px;
+    margin-top: 40px;
+    justify-items: center; /* centra los cuadros */
+}
+
+.resumen-sede-card {
+    background: white;
+    border: 3px solid #5DADE2;
+    border-radius: 20px;
+    width: 280px; /* ancho fijo más pequeño */
+    padding: 20px;
+    box-shadow: 0 8px 25px rgba(93,173,226,0.2);
+    text-align: center;
+}
+
+.resumen-sede-card h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+.resumen-sede-card .numero {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #5DADE2;
+    margin: 10px 0;
+}
+
+.resumen-sede-card .label {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.resumen-sede-card button {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    #resumen-pagos-sedes {
+        grid-template-columns: 1fr 1fr;
+    }
+    .resumen-sede-card {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 600px) {
+    #resumen-pagos-sedes {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Grid responsive para resúmenes de sedes */
+.resumen-sede-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+    justify-items: center;
+}
+
+/* Card general más destacado */
+.resumen-sede-card.general {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #5DADE2, #81D4FA);
+    color: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(93,173,226,0.4);
+}
+
+/* Cards normales */
+.resumen-sede-card {
+    background: white;
+    border: 4px solid #5DADE2;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(93,173,226,0.2);
+    text-align: center;
+    width: 100%;
+    max-width: 380px;
+}
+
+/* Números grandes y colores */
+.resumen-sede-card .numero {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #5DADE2;
+}
+
+.resumen-sede-card .numero.grande {
+    font-size: 4rem;
+}
+
+.resumen-sede-card .numero.total-num {
+    font-size: 3.5rem;
+    color: #2c3e50;
+}
+
+/* Estadísticas dentro del card */
+.estadistica-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.estadistica-item {
+    background: #f8fbff;
+    padding: 15px;
+    border-radius: 12px;
+    border: 2px solid #5DADE2;
+}
+
+.estadistica-item.total {
+    grid-column: 1 / -1;
+    background: #5DADE2;
+    color: white;
+    font-size: 1.4rem;
+}
+
+.estadistica-item .label {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    opacity: 0.9;
+}

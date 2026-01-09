@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Pacientes - Evolución Chile</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="app-content" style="display:block;">
+        <div class="container">
+            <header class="header">
+                <div class="logo-container">
+                    <img src="logo-evolucion.png" alt="Logo Evolución Chile" class="logo">
+                </div>
+                <div class="header-text">
+                    <h1>Sistema de Gestión de Pacientes</h1>
+                    <h2>Centros de Rehabilitación Evolución Chile</h2>
+                </div>
+            </header>
+
+            <!-- MENÚ PRINCIPAL -->
+            <section id="menu-principal">
+                <h3>Seleccione una opción</h3>
+                <div class="botones-grid">
+                    <button class="btn-menu" data-seccion="ingresar">
+                        <span class="icono">➕</span>
+                        <span>Ingresar Paciente</span>
+                    </button>
+                    <button class="btn-menu" data-seccion="modificar">
+                        <span class="icono">✏️</span>
+                        <span>Modificar Paciente</span>
+                    </button>
+                    <button class="btn-menu" data-seccion="ver-ficha">
+                        <span class="icono">👁️</span>
+                        <span>Ver Ficha Paciente</span>
+                    </button>
+                    <button class="btn-menu" data-seccion="consultar-sedes">
+                        <span class="icono">📊</span>
+                        <span>Consultar Sedes</span>
+                    </button>
+                    <button class="btn-menu" data-seccion="pagos">
+                        <span class="icono">💰</span>
+                        <span>Control de Pagos</span>
+                    </button>
+                    <button class="btn-menu" data-seccion="documentos-institucion">
+                        <span class="icono">📄</span>
+                        <span>Documentos Evolución Chile</span>
+                    </button>
+                    <button class="btn-menu" data-seccion="psiquiatria">
+                        <span class="icono">🧠</span>
+                        <span>Psiquiatría</span>
+                    </button>
+                    <button class="btn-menu" data-seccion="evaluaciones-semanales">
+                        <span class="icono">📅</span>
+                        <span>Evaluaciones Semanales</span>
+                    </button>
+                    <button class="btn-menu btn-danger" data-seccion="eliminar-masivo">
+                        <span class="icono">🗑️</span>
+                        <span>Eliminar Todos los Pacientes</span>
+                    </button>
+                    <button class="btn-menu" data-seccion="carga-masiva">
+                        <span class="icono">📤</span>
+                        <span>Carga Masiva (Pruebas)</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- INGRESAR PACIENTE -->
+            <section id="seccion-ingresar" class="seccion-oculta">
+                <button class="btn-volver">← Volver</button>
+                <div class="titulo-seccion">
+                    <h3>Ingresar Nuevo Paciente</h3>
+                </div>
+
+                <form id="registro-form">
+                    <fieldset class="fieldset-profesional">
+                        <legend>Datos del Paciente</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nombre completo *</label>
+                                <input type="text" id="nombre" required placeholder="Ej: Luis Antonio Vasquez Fuentes">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tipo de documento *</label>
+                                <select id="tipo_documento" required>
+                                    <option value="rut">RUT Chileno</option>
+                                    <option value="pasaporte">Pasaporte</option>
+                                    <option value="cedula">Cédula Extranjera</option>
+                                    <option value="otro">Otro ID</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Número de documento *</label>
+                                <input type="text" id="numero_documento" required placeholder="Ej: 12.345.678-9 o AB123456">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Sede *</label>
+                                <select id="sede" required>
+                                    <option value="">Seleccionar sede</option>
+                                    <option value="Olea">Olea</option>
+                                    <option value="Naltahua">Naltahua</option>
+                                    <option value="Femenino uno">Femenino uno</option>
+                                    <option value="Femenino dos">Femenino dos</option>
+                                    <option value="Polpaico">Polpaico</option>
+                                    <option value="Buin">Buin</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha de ingreso *</label>
+                                <input type="date" id="fecha_ingreso" required>
+                            </div>
+                            
+
+                            <div class="form-group">
+                                <label>Etapa</label>
+                                <select id="etapa">
+                                    <option value="">Ninguna</option>
+                                    <option value="Compromiso">Compromiso</option>
+                                    <option value="Grupo 4">Grupo 4</option>
+                                    <option value="Grupo 3">Grupo 3</option>
+                                    <option value="Grupo 2">Grupo 2</option>
+                                    <option value="Grupo 1">Grupo 1</option>
+                                    <option value="Nivel 1">Nivel 1</option>
+                                    <option value="Nivel 2">Nivel 2</option>
+                                    <option value="Nivel 3">Nivel 3</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Sexo *</label>
+                                <select id="sexo" required>
+                                    <option value="">Seleccionar sexo</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha de nacimiento *</label>
+                                <input type="date" id="fecha_nacimiento" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Ocupación</label>
+                                <input type="text" id="ocupacion" placeholder="Ej: Mecánico, Estudiante, Dueña de casa, Pensionado">
+                            </div>
+                            <div class="form-group">
+                                <label>Previsión de salud *</label>
+                                <select id="prevision" required>
+                                    <option value="">Seleccionar previsión</option>
+                                    <option value="Fonasa">Fonasa</option>
+                                    <option value="Isapre - Consalud">Isapre - Consalud</option>
+                                    <option value="Isapre - Banmédica">Isapre - Banmédica</option>
+                                    <option value="Isapre - Colmena">Isapre - Colmena</option>
+                                    <option value="Isapre - Cruz Blanca">Isapre - Cruz Blanca</option>
+                                    <option value="Isapre - Nueva Masvida">Isapre - Nueva Masvida</option>
+                                    <option value="Isapre - Vida Tres">Isapre - Vida Tres</option>
+                                    <option value="Isapre - Esencial">Isapre - Esencial</option>
+                                    <option value="Otra Isapre">Otra Isapre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Atención Psiquiátrica</label>
+                                <select id="atencion_psiquiatrica">
+                                    <option value="">Seleccionar</option>
+                                    <option value="Medicamentos">Medicamentos</option>
+                                    <option value="Licencia">Licencia</option>
+                                    <option value="Licencia y Medicamentos">Licencia y Medicamentos</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Dirección</label>
+                                <input type="text" id="direccion" placeholder="Ej: Calle Los Alamos 123, Comuna, Ciudad">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Región *</label>
+                                <select id="region" required>
+                                    <option value="">Seleccionar región</option>
+                                    <option value="Arica y Parinacota">Arica y Parinacota</option>
+                                    <option value="Tarapacá">Tarapacá</option>
+                                    <option value="Antofagasta">Antofagasta</option>
+                                    <option value="Atacama">Atacama</option>
+                                    <option value="Coquimbo">Coquimbo</option>
+                                    <option value="Valparaíso">Valparaíso</option>
+                                    <option value="Metropolitana">Metropolitana</option>
+                                    <option value="O'Higgins">O'Higgins</option>
+                                    <option value="Maule">Maule</option>
+                                    <option value="Ñuble">Ñuble</option>
+                                    <option value="Biobío">Biobío</option>
+                                    <option value="Araucanía">Araucanía</option>
+                                    <option value="Los Ríos">Los Ríos</option>
+                                    <option value="Los Lagos">Los Lagos</option>
+                                    <option value="Aysén">Aysén</option>
+                                    <option value="Magallanes">Magallanes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Comuna *</label>
+                                <input type="text" id="comuna" required placeholder="Ej: Temuco">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="fieldset-profesional">
+                        <legend>Datos del Apoderado</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nombre apoderado</label>
+                                <input type="text" id="nombre_apoderado">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tipo de documento apoderado</label>
+                                <select id="tipo_documento_apoderado">
+                                    <option value="">Ninguno</option>
+                                    <option value="rut">RUT Chileno</option>
+                                    <option value="pasaporte">Pasaporte</option>
+                                    <option value="cedula">Cédula Extranjera</option>
+                                    <option value="otro">Otro ID</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Número de documento apoderado</label>
+                                <input type="text" id="numero_documento_apoderado" placeholder="Ej: 12.345.678-9 o AB123456">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Teléfono</label>
+                                <input type="tel" id="telefono_apoderado">
+                            </div>
+                            <div class="form-group">
+                                <label>Correo apoderado</label>
+                                <input type="email" id="correo_apoderado" placeholder="Ej: apoderado@example.com">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Dirección del apoderado</label>
+                                <input type="text" id="direccion_apoderado" placeholder="Ej: Avenida Siempre Viva 742, Comuna">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="fieldset-profesional">
+                        <legend>Control de Pago Mensual</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Monto mensual ($)</label>
+                                <input type="number" id="monto_mensual" value="350000" min="0" step="1000" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Día de vencimiento del pago (1-31)</label>
+                                <input type="number" id="fecha_vencimiento_pago" value="5" min="1" max="31" required>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- OTROS CONTACTOS - 3 FILAS ORDENADAS (Nombre | Parentesco | Teléfono) -->
+                    <fieldset class="fieldset-profesional">
+                        <legend>Otros Contactos (opcional - hasta 3)</legend>
+
+                        <!-- Contacto 1 -->
+                        <div class="form-grid" style="grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label>Nombre Contacto 1</label>
+                                <input type="text" id="otro_contacto1_nombre" placeholder="Ej: María González">
+                            </div>
+                            <div class="form-group">
+                                <label>Parentesco Contacto 1</label>
+                                <input type="text" id="otro_contacto1_parentezco" placeholder="Ej: Hermana, Amigo">
+                            </div>
+                            <div class="form-group">
+                                <label>Teléfono Contacto 1</label>
+                                <input type="tel" id="otro_contacto1_telefono" placeholder="Ej: +56912345678">
+                            </div>
+                        </div>
+
+                        <!-- Contacto 2 -->
+                        <div class="form-grid" style="grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label>Nombre Contacto 2</label>
+                                <input type="text" id="otro_contacto2_nombre" placeholder="Ej: Pedro López">
+                            </div>
+                            <div class="form-group">
+                                <label>Parentesco Contacto 2</label>
+                                <input type="text" id="otro_contacto2_parentezco" placeholder="Ej: Padre, Primo">
+                            </div>
+                            <div class="form-group">
+                                <label>Teléfono Contacto 2</label>
+                                <input type="tel" id="otro_contacto2_telefono" placeholder="Ej: +56987654321">
+                            </div>
+                        </div>
+
+                        <!-- Contacto 3 -->
+                        <div class="form-grid" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                            <div class="form-group">
+                                <label>Nombre Contacto 3</label>
+                                <input type="text" id="otro_contacto3_nombre" placeholder="Ej: Ana Ramírez">
+                            </div>
+                            <div class="form-group">
+                                <label>Parentesco Contacto 3</label>
+                                <input type="text" id="otro_contacto3_parentezco" placeholder="Ej: Tío, Vecino">
+                            </div>
+                            <div class="form-group">
+                                <label>Teléfono Contacto 3</label>
+                                <input type="tel" id="otro_contacto3_telefono" placeholder="Ej: +56955555555">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="fieldset-profesional">
+                        <legend>Foto de Cédula</legend>
+                        <div class="form-group full-width">
+                            <label>Foto de cédula (opcional)</label>
+                            <input type="file" id="foto_cedula" name="foto_cedula" accept="image/*">
+                            <div id="preview-foto" class="preview-image"></div>
+                        </div>
+                    </fieldset>
+
+                    <button type="submit" class="btn-primary grande">Registrar Paciente</button>
+                </form>
+            </section>
+
+            <!-- MODIFICAR PACIENTE -->
+            <section id="seccion-modificar" class="seccion-oculta">
+                <button class="btn-volver">← Volver</button>
+                <div class="titulo-seccion">
+                    <h3>Modificar Paciente</h3>
+                </div>
+                <div class="busqueda-container">
+                    <input type="text" id="buscar-modificar" placeholder="Buscar por nombre o número de documento" class="buscador">
+                    <button id="btn-buscar-modificar" class="btn-primary">Buscar</button>
+                </div>
+                <div id="resultados-modificar"></div>
+            </section>
+
+            <!-- VER FICHA PACIENTE -->
+            <section id="seccion-ver-ficha" class="seccion-oculta">
+                <button class="btn-volver">← Volver</button>
+                <div class="titulo-seccion">
+                    <h3>Ver Ficha Paciente</h3>
+                </div>
+                <div class="busqueda-container">
+                    <input type="text" id="buscar-ver-ficha" placeholder="Buscar por nombre o número de documento" class="buscador">
+                    <button id="btn-buscar-ver-ficha" class="btn-primary">Buscar</button>
+                </div>
+                <div id="resultados-ver-ficha"></div>
+            </section>
+
+            <!-- CONSULTAR SEDES -->
+            <section id="seccion-consultar-sedes" class="seccion-oculta">
+                <button class="btn-volver">← Volver</button>
+                <div class="titulo-seccion">
+                    <h3>Consultar Pacientes por Sede</h3>
+                </div>
+                <div class="consulta-container">
+                    <select id="select-sede" class="select-sede">
+                        <option value="">Todas las sedes</option>
+                        <option value="Olea">Olea</option>
+                        <option value="Naltahua">Naltahua</option>
+                        <option value="Femenino uno">Femenino uno</option>
+                        <option value="Femenino dos">Femenino dos</option>
+                        <option value="Polpaico">Polpaico</option>
+                        <option value="Buin">Buin</option>
+                    </select>
+                    <button id="btn-consultar" class="btn-primary">Consultar</button>
+                </div>
+
+                <div id="resumen-container" style="margin-top:40px;"></div>
+
+                <div id="lista-sedes" style="margin-top:60px;"></div>
+            </section>
+
+            <!-- CONTROL DE PAGOS -->
+            <section id="seccion-pagos" class="seccion-oculta">
+                <button class="btn-volver">← Volver</button>
+                <div class="titulo-seccion">
+                    <h3>Control de Pagos Mensuales</h3>
+                </div>
+
+                <!-- Buscador principal -->
+                <div id="buscador-principal" class="busqueda-container" style="margin:30px 0;">
+                    <input type="text" id="buscar-pago-principal" placeholder="Buscar por nombre, apellido o número de documento en todas las sedes" class="buscador">
+                    <button id="btn-buscar-pago-principal" class="btn-primary">Buscar</button>
+                </div>
+
+                <!-- Resumen por sede (sin mensaje de carga largo) -->
+                <div id="resumen-pagos-sedes" class="resumen-sede-grid">
+                    <!-- Los cuadros se generan con JS -->
+                </div>
+
+                <!-- Lista detallada (con botones arriba) -->
+                <div id="lista-pagos-detalle" style="display:none;">
+                    <!-- Botones arriba (excluidos del evento general) -->
+                    <div style="text-align:center; margin:20px 0 40px 0;">
+                        <button class="btn-volver btn-no-general" onclick="ocultarListaDetalle()">
+                            ← Volver al Resumen de Pagos
+                        </button>
+                        <button class="btn-volver btn-no-general" style="margin-left:20px;" onclick="volverAlMenuPrincipal()">
+                            ← Volver al Menú Principal
+                        </button>
+                    </div>
+
+                    <h3 style="text-align:center; margin-bottom:30px; color:#2c3e50;" id="titulo-lista-sede"></h3>
+
+                    <div class="busqueda-container" style="margin-bottom:30px;">
+                        <input type="text" id="buscar-pago-detalle" placeholder="Buscar por nombre, apellido o número de documento" class="buscador">
+                        <button id="btn-buscar-pago-detalle" class="btn-primary">Buscar</button>
+                    </div>
+
+                    <div id="contenido-lista-pagos"></div>
+                </div>
+            </section>
+
+            <!-- PSIQUIATRÍA -->
+            <section id="seccion-psiquiatria" class="seccion-oculta">
+                <button class="btn-volver">← Volver</button>
+                <div class="titulo-seccion">
+                    <h3>Control Psiquiátrico</h3>
+                </div>
+                <div class="container" style="text-align:center; padding:80px 20px;">
+                    <p style="font-size:1.6rem; color:#555; margin-bottom:30px;">
+                        🧠 Módulo de Psiquiatría
+                    </p>
+                    <p style="font-size:1.3rem; color:#888; line-height:1.8;">
+                        Sección en desarrollo<br><br>
+                        Aquí podrás gestionar:<br>
+                        • Consultas psiquiátricas<br>
+                        • Recetas médicas y control de medicamentos<br>
+                        • Licencias médicas<br>
+                        • Evolución del tratamiento psiquiátrico<br>
+                        • Alertas de renovación de recetas
+                    </p>
+                </div>
+            </section>
+
+            <!-- ELIMINAR MASIVO -->
+            <section id="seccion-eliminar-masivo" class="seccion-oculta">
+                <button class="btn-volver">← Volver</button>
+                <div class="titulo-seccion">
+                    <h3>Eliminar Todos los Pacientes</h3>
+                </div>
+
+                <div class="container" style="max-width:800px; margin:0 auto; text-align:center; padding:60px 20px;">
+                    <div class="alert-danger" style="background:#ffebee; border:3px solid #f44336; border-radius:15px; padding:30px; margin-bottom:40px;">
+                        <h4 style="color:#c62828; margin-bottom:20px;">⚠️ ADVERTENCIA ⚠️</h4>
+                        <p style="font-size:1.3rem; color:#333; line-height:1.8;">
+                            Esta acción es <strong>IRREVERSIBLE</strong>.<br><br>
+                            Se eliminarán:<br>
+                            • Todos los pacientes de la base de datos<br>
+                            • Todas las carpetas y fotos de cédula en <code>public/documentos/</code><br>
+                            • Todos los pagos asociados
+                        </p>
+                    </div>
+
+                    <p style="font-size:1.2rem; color:#666; margin-bottom:40px;">
+                        Escribe <strong>"ELIMINAR TODO"</strong> en el campo para confirmar:
+                    </p>
+
+                    <input type="text" id="confirmacion-eliminar" placeholder="ELIMINAR TODO" style="padding:15px; font-size:1.3rem; width:300px; border-radius:12px; border:2px solid #f44336; text-align:center; margin-bottom:30px;">
+
+                    <br>
+
+                    <button id="btn-eliminar-masivo" class="btn-primary grande" style="background:#f44336;" disabled>
+                        Confirmar Eliminación Masiva
+                    </button>
+                </div>
+            </section>
+
+            <!-- EVALUACIONES SEMANALES -->
+            <section id="seccion-evaluaciones-semanales" class="seccion-oculta">
+                <button class="btn-volver">← Volver</button>
+                <div class="titulo-seccion">
+                    <h3>Evaluaciones Semanales</h3>
+                </div>
+
+                <div class="consulta-container">
+                    <label for="fecha-evaluacion" style="font-size:1.4rem; display:block; margin-bottom:10px;">
+                        Seleccionar domingo de evaluación:
+                    </label>
+                    <input type="date" id="fecha-evaluacion" required style="padding:15px; font-size:1.3rem; border-radius:12px; border:2px solid #5DADE2; width:300px;">
+                    <button id="btn-buscar-evaluaciones" class="btn-primary" style="padding:15px 30px; font-size:1.3rem; margin-left:20px;">Buscar Pacientes</button>
+                </div>
+
+                <div id="lista-evaluaciones" style="margin-top:40px;">
+                    <p style="text-align:center;color:#999;padding:80px;font-size:1.4rem;">
+                        Selecciona un domingo para ver los pacientes que deben ser evaluados esa semana.
+                    </p>
+                </div>
+            </section>
+
+            <!-- CARGA MASIVA PARA PRUEBAS -->
+            <section id="seccion-carga-masiva" class="seccion-oculta">
+                <button class="btn-volver">← Volver</button>
+                <div class="titulo-seccion">
+                    <h3>Carga Masiva de Pacientes (Solo Pruebas)</h3>
+                </div>
+
+                <div class="container" style="max-width:900px; margin:0 auto; padding:40px 20px;">
+                    <div class="alert-info" style="background:#e3f2fd; border:3px solid #2196f3; border-radius:15px; padding:25px; margin-bottom:40px;">
+                        <h4 style="color:#1565c0; margin-bottom:15px;">ℹ️ Instrucciones</h4>
+                        <p style="font-size:1.2rem; line-height:1.8;">
+                            Sube un archivo <strong>Excel (.xlsx)</strong> o <strong>CSV</strong> con las siguientes columnas en este orden:<br><br>
+                            <strong>NOMBRE | NÚMERO DE DOCUMENTO | SEDE | FECHA DE INGRESO | ESTADO | ETAPA</strong><br><br>
+                            Ejemplo de fila:<br>
+                            Juan Pérez | 12.345.678-9 | Olea | 29-12-2025 | Activo | Compromiso<br><br>
+                            Los demás campos se dejarán vacíos o con valores por defecto. Se asumirá RUT Chileno para carga masiva.
+                        </p>
+                    </div>
+
+                    <div style="text-align:center;">
+                        <input type="file" id="archivo-carga-masiva" accept=".xlsx,.csv" style="padding:15px; font-size:1.2rem; margin-bottom:20px;">
+                        <br>
+                        <button id="btn-subir-carga-masiva" class="btn-primary grande">Subir y Procesar Archivo</button>
+                    </div>
+
+                    <div id="resultado-carga-masiva" style="margin-top:40px;"></div>
+                </div>
+            </section>
+
+            <!-- DOCUMENTOS EVOLUCIÓN CHILE -->
+            <section id="seccion-documentos-institucion" class="seccion-oculta">
+                <button class="btn-volver">← Volver</button>
+                <div class="titulo-seccion">
+                    <h3>Documentos Institucionales Evolución Chile</h3>
+                </div>
+
+                <div class="container" style="max-width:1000px; margin:0 auto;">
+                    <fieldset class="fieldset-profesional">
+                        <legend>Subir Nuevos Documentos</legend>
+                        <div style="text-align:center; padding:30px;">
+                            <p style="font-size:1.3rem; margin-bottom:20px; color:#666;">
+                                Sube cualquier tipo de documento institucional (PDF, Word, imágenes, etc.). Puedes seleccionar varios archivos a la vez.
+                            </p>
+                            <input type="file" id="upload-documentos" multiple style="padding:15px; font-size:1.2rem;">
+                            <br><br>
+                            <button id="btn-subir-documentos" class="btn-primary grande">Subir Documentos</button>
+                            <div id="mensaje-upload" style="margin-top:20px; font-size:1.3rem;"></div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="fieldset-profesional">
+                        <legend>Documentos Subidos</legend>
+                        <div id="lista-documentos" style="margin-top:20px;">
+                            <p style="text-align:center; color:#999; padding:40px;">Cargando documentos...</p>
+                        </div>
+                    </fieldset>
+                </div>
+            </section>
+
+
+
+            <!-- Modal para Control de Pagos (desde la lista) -->
+            <div id="modal-control-pagos" class="modal">
+                <div class="modal-content" style="max-width:900px;">
+                    <span class="close-modal" onclick="cerrarModalPagos()">&times;</span>
+                    <h3>Control de Pagos Mensuales</h3>
+
+                    <div class="estadisticas-card" style="margin:20px 0; padding:25px;">
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; font-size:1.2rem;">
+                            <div><strong>Nombre:</strong> <span id="modal-pagos-nombre"></span></div>
+                            <div><strong>Documento:</strong> <span id="modal-pagos-rut"></span></div>
+                            <div><strong>Sede:</strong> <span id="modal-pagos-sede"></span></div>
+                            <div><strong>Valor mensualidad:</strong> $<span id="modal-pagos-monto"></span></div>
+                        </div>
+                    </div>
+
+                    <h4 style="margin:30px 0 20px; color:#2c3e50;">Historial de Pagos (12 meses desde ingreso)</h4>
+                    <div class="form-grid" id="modal-pagos-grid" style="margin-bottom:40px;">
+                        <!-- Los meses se generan con JS -->
+                    </div>
+
+                    <div style="text-align:center;">
+                        <button class="btn-primary grande" id="btn-guardar-pagos-modal">Guardar Cambios en Pagos</button>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- CIERRE DEL CONTAINER PRINCIPAL -->
+
+        <!-- Modal para editar paciente -->
+        <div id="edit-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>Editar Paciente</h3>
+                <form id="edit-form"></form>
+            </div>
+        </div>
+
+        <!-- Modal para ver ficha completa -->
+        <div id="ficha-modal" class="modal">
+            <div class="modal-content ficha-content">
+                <span class="close-modal-ficha">&times;</span>
+                <h3>Ficha Completa del Paciente</h3>
+                <div id="ficha-detalle"></div>
+                <button class="btn-primary cerrar-ficha">Cerrar Ficha</button>
+            </div>
+        </div>
+
+        <div id="mensaje-exito"></div>
+    </div>
+<script src="https://unpkg.com/pizzip@3.1.1/dist/pizzip.js"></script>
+<script src="https://unpkg.com/pizzip@3.1.1/dist/pizzip-utils.js"></script>
+<script src="https://unpkg.com/docxtemplater@3.28.1/build/docxtemplater.js"></script>
+<script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
