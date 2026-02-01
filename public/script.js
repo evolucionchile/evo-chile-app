@@ -168,6 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     cargarKpiDashboard();
                 }
             }
+            if (seccion === 'stock-mercaderia') {
+                document.getElementById('seccion-stock-mercaderia').style.display = 'block';
+            }
         });
     });
 
