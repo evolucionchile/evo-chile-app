@@ -1,18 +1,20 @@
 {
   "name": "evo_chile_app",
   "version": "1.0.0",
+  "description": "Sistema de Gestion de Pacientes - Evolucion Chile",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "postinstall": "npm rebuild sqlite3 bcryptjs"
+    "postinstall": "npm rebuild sqlite3"
   },
-"dependencies": {
-  "express": "^4.18.2",
-  "sqlite3": "^5.1.7",
-  "multer": "^1.4.5-lts.1",
-  "bcryptjs": "^2.4.3",
-  "body-parser": "^1.20.2",
-  "xlsx": "^0.18.5"   // ← AGREGAR ESTA LÍNEA
-}
-  "description": "Sistema de Gestion de Pacientes - Evolucion Chile"
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.7",
+    "multer": "^1.4.5-lts.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "xlsx": "^0.18.5"
+  },
+  "author": "",
+  "license": "ISC"
 }
