@@ -6,6 +6,14 @@ const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
 const app = express();
+// Servir archivos estáticos (HTML, CSS, JS, imágenes)
+app.use(express.static('public'));  // si tienes carpeta public
+app.use(express.static(__dirname));  // sirve todo desde la raíz (más simple para tu caso)
+
+// Ruta raíz: sirve index.html directamente
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+});
 const port = 3000;
 
 // Ruta base para documentos por paciente
