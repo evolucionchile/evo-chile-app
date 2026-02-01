@@ -1,23 +1,20 @@
-{
-  "name": "mi-todo-app",
-  "version": "1.0.0",
+  "name": "evo_chile_app",
+   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-"postinstall": "npm rebuild sqlite3"   // ← AGREGAR ESTA LÍNEA
+    "test": "echo \"Error: no test specified\" && exit 1", 
+    "start": "node server.js",
+    "postinstall": "npm rebuild sqlite3"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.1.1",
-    "body-parser": "^2.2.2",
     "express": "^4.22.1",
-    "multer": "^1.4.5-lts.1",
     "sqlite3": "^5.1.7",
-    "xlsx": "^0.18.5"
-  },
-  "description": "  #\u0000 \u0000c\u0000o\u0000n\u0000t\u0000r\u0000o\u0000l\u0000u\u0000s\u0000u\u0000a\u0000r\u0000i\u0000o\u0000s\u0000\r\u0000 \u0000#\u0000 \u0000g\u0000e\u0000s\u0000t\u0000i\u0000o\u0000n\u0000-\u0000e\u0000v\u0000o\u0000l\u0000u\u0000c\u0000i\u0000o\u0000n\u0000-\u0000c\u0000h\u0000i\u0000l\u0000e\u0000\r\u0000 \u0000",
-  "devDependencies": {}
+    "multer": "^1.4.5-lts.1",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2"
+    "xlsx": "^0.18.5"  },
+  "description": "Sistema de Gestión de Pacientes - Evolución Chile"
 }
