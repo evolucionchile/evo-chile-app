@@ -1,802 +1,1434 @@
+/* =========================================================
+   RESET + BASE
+========================================================= */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-body {
-    font-family: 'Roboto', sans-serif;
-    background: #ECF6FF;
-    color: #333;
-    min-height: 100vh;
+body{
+  font-family: 'Roboto', sans-serif;
+  background:#ECF6FF;
+  color:#333;
+  min-height:100vh;
 }
 
-.container {
-    max-width: 1300px;
-    margin: 0 auto;
-    background: white;
-    min-height: 100vh;
-    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+.container{
+  max-width:1300px;
+  margin:0 auto;
+  background:white;
+  min-height:100vh;
+  box-shadow:0 0 20px rgba(0,0,0,0.05);
 }
 
-.header {
-    background: #5DADE2;
-    color: white;
-    padding: 40px;
-    text-align: center;
+/* =========================================================
+   HEADER + LOGO (VERSIÓN FINAL)
+========================================================= */
+.header{
+  background:#5DADE2;
+  color:white;
+  padding:30px 40px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  position:relative;
 }
 
-.header h1 { font-size: 2.8rem; margin-bottom: 10px; }
-.header h2 { font-size: 1.4rem; opacity: 0.9; }
-
-/* ==================== LOGO MODIFICADO ==================== */
-/* ==================== LOGO AL LADO IZQUIERDO ==================== */
-.header {
-    background: #5DADE2;
-    color: white;
-    padding: 30px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    position: relative;
+.logo-container{
+  flex-shrink:0;
+  margin-right:40px;
 }
 
-.logo-container {
-    flex-shrink: 0;
-    margin-right: 40px; /* espacio entre logo y texto */
+.logo{
+  height:90px;
+  width:auto;
+  max-width:260px;
+  object-fit:contain;
+  background:transparent;
+  padding:0;
 }
 
-.logo {
-    height: 90px;
-    width: auto;
-    max-width: 260px;
-    object-fit: contain;
-    background: transparent;
-    padding: 0;
+.header-text{
+  text-align:center;
+  flex:1;
 }
 
-.header-text {
-    text-align: center;
-    flex: 1; /* ocupa todo el espacio disponible */
+.header-text h1{
+  font-size:2.6rem;
+  margin:0;
 }
 
-.header-text h1 {
-    font-size: 2.6rem;
-    margin: 0;
+.header-text h2{
+  font-size:1.4rem;
+  margin:8px 0 0 0;
+  opacity:0.9;
 }
 
-.header-text h2 {
-    font-size: 1.4rem;
-    margin: 8px 0 0 0;
-    opacity: 0.9;
+@media (max-width:768px){
+  .header{
+    flex-direction:column;
+    text-align:center;
+    padding:30px 20px;
+  }
+  .logo-container{
+    margin-right:0;
+    margin-bottom:20px;
+  }
+  .logo{
+    height:70px;
+    max-width:200px;
+  }
+  .header-text h1{ font-size:2.2rem; }
+  .header-text h2{ font-size:1.2rem; }
 }
 
-/* Responsive para móviles */
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        text-align: center;
-        padding: 30px 20px;
-    }
+/* =========================================================
+   MENÚ PRINCIPAL
+========================================================= */
+#menu-principal{ padding:60px 20px; text-align:center; }
+#menu-principal h3{ font-size:2rem; margin-bottom:50px; color:#2c3e50; }
 
-    .logo-container {
-        margin-right: 0;
-        margin-bottom: 20px;
-    }
-
-    .logo {
-        height: 70px;
-        max-width: 200px;
-    }
-
-    .header-text h1 {
-        font-size: 2.2rem;
-    }
-
-    .header-text h2 {
-        font-size: 1.2rem;
-    }
-}
-/* ========================================================= */
-
-#menu-principal { padding: 60px 20px; text-align: center; }
-#menu-principal h3 { font-size: 2rem; margin-bottom: 50px; color: #2c3e50; }
-
-.botones-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 40px;
-    max-width: 1200px;
-    margin: 0 auto;
+.botones-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:25px;
+  max-width:1400px;
+  margin:0 auto;
+  padding:40px 20px;
 }
 
-.btn-menu {
-    background: white;
-    border: 4px solid #5DADE2;
-    border-radius: 20px;
-    padding: 40px 25px; /* reducido de 60px 30px */
-    font-size: 1.5rem; /* reducido de 1.8rem */
-    font-weight: bold;
-    color: #5DADE2;
-    cursor: pointer;
-    box-shadow: 0 8px 25px rgba(93,173,226,0.2);
-    transition: all 0.4s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px; /* reducido de 25px */
-    min-height: 180px; /* para mantener proporción */
+@media (max-width:1400px){ .botones-grid{ grid-template-columns:repeat(4,1fr); } }
+@media (max-width:1100px){ .botones-grid{ grid-template-columns:repeat(3,1fr); } }
+@media (max-width:800px){ .botones-grid{ grid-template-columns:repeat(2,1fr); } }
+@media (max-width:500px){ .botones-grid{ grid-template-columns:1fr; } }
+
+.btn-menu{
+  background:white;
+  border:4px solid #5DADE2;
+  border-radius:20px;
+  padding:25px 15px;
+  font-size:1.2rem;
+  font-weight:bold;
+  color:#5DADE2;
+  cursor:pointer;
+  box-shadow:0 8px 25px rgba(93,173,226,0.2);
+  transition:all 0.4s ease;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  min-height:140px;
 }
 
-.btn-menu:hover {
-    background: #5DADE2;
-    color: white;
-    transform: translateY(-10px);
+.btn-menu:hover{
+  background:#5DADE2;
+  color:white;
+  transform:translateY(-10px);
 }
 
-.btn-menu .icono { 
-    font-size: 4rem; /* reducido de 5rem */
+.btn-menu .icono{ font-size:3rem; }
+
+.seccion-oculta{ display:none; }
+section[class^="seccion-"]{ padding:40px; }
+
+.btn-volver{
+  background:#34495e;
+  color:white;
+  border:none;
+  padding:15px 30px;
+  border-radius:12px;
+  font-size:1.2rem;
+  cursor:pointer;
+  margin-bottom:30px;
 }
 
-.seccion-oculta { display: none; }
-
-section[class^="seccion-"] { padding: 40px; }
-
-.btn-volver {
-    background: #34495e;
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 12px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    margin-bottom: 30px;
+/* =========================================================
+   BOTONES
+   (Se unifica .btn-primary con la versión final del CSS)
+========================================================= */
+.btn-primary{
+  background:#3498db;
+  color:white;
+  border:none;
+  padding:12px 24px;
+  border-radius:8px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s;
+  width:100%;
+  margin-top:30px;
 }
 
-.btn-primary {
-    background: #5DADE2;
-    color: white;
-    padding: 20px 40px;
-    font-size: 1.5rem;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 30px;
+.btn-primary:hover{
+  background:#2980b9;
+  transform:translateY(-1px);
 }
 
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+.btn-primary.grande{
+  padding:22px 50px;
+  font-size:1.8rem;
+  margin-top:20px;
 }
 
-.form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
-.form-group input, .form-group select {
-    width: 100%;
-    padding: 15px;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    font-size: 1.1rem;
+/* Botones de acciones pequeñas */
+.paciente-card .btn-edit{
+  background:#5DADE2;
+  color:white;
+  padding:12px 25px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
 }
 
-.busqueda-container, .consulta-container { text-align: center; margin: 40px 0; }
-
-.buscador, .select-sede {
-    width: 100%;
-    max-width: 700px;
-    padding: 18px;
-    font-size: 1.3rem;
-    border: 2px solid #5DADE2;
-    border-radius: 15px;
-    margin: 20px auto;
-    display: inline-block;
+/* Eliminar */
+.botones-accion{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
 }
 
-#btn-buscar-modificar, #btn-buscar-ver-ficha, #btn-consultar {
-    padding: 18px 40px;
-    font-size: 1.4rem;
-    margin-left: 20px;
-    display: inline-block;
-    width: auto;
+.btn-delete{
+  background:#dc3545 !important;
+  color:white;
+  padding:10px 20px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:1rem;
 }
 
-.paciente-card {
-    background: #f8fbff;
-    border: 2px solid #5DADE2;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 15px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.btn-delete:hover{ background:#c82333 !important; }
+
+/* =========================================================
+   FORMULARIOS (UNIFICADO)
+========================================================= */
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+  gap:25px;
+  margin-top:20px;
 }
 
-.paciente-card .btn-edit {
-    background: #5DADE2;
-    color: white;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-}
+.form-group{ margin-bottom:0; }
 
-/* Contenedor para los resúmenes - 3 por fila */
-#resumen-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* 3 por fila en pantallas grandes */
-    gap: 30px;
-    margin-top: 40px;
-}
-
-/* Grid para resúmenes: 3 por fila, cuadros más pequeños */
-#resumen-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* 3 por fila en grandes */
-    gap: 25px;
-    margin-top: 40px;
-}
-
-.resumen-sede-card {
-    background: white;
-    border: 3px solid #5DADE2;
-    border-radius: 18px;
-    padding: 18px; /* más pequeño */
-    box-shadow: 0 8px 25px rgba(93,173,226,0.2);
-    text-align: center;
-}
-
-.resumen-sede-card h4 {
-    color: #2c3e50;
-    margin-bottom: 12px;
-    font-size: 1.3rem; /* título más pequeño */
-}
-
-.resumen-sede-card .estadistica-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.resumen-sede-card .estadistica-item {
-    background: #f8fbff;
-    padding: 12px;
-    border-radius: 10px;
-    border: 2px solid #5DADE2;
-}
-
-.resumen-sede-card .estadistica-item.total {
-    grid-column: 1 / -1;
-    background: #5DADE2;
-    color: white;
-    font-size: 1.2rem;
-    padding: 15px;
-}
-
-.resumen-sede-card .label {
-    font-size: 1.0rem;
-    opacity: 0.9;
-}
-
-.resumen-sede-card .numero {
-    font-size: 2.0rem; /* números más pequeños */
-    font-weight: bold;
-}
-
-/* En móviles: 1 por fila */
-@media (max-width: 900px) {
-    #resumen-container {
-        grid-template-columns: 1fr;
-    }
-}
-
-.estadistica-item .label { display: block; font-size: 1.2rem; margin-bottom: 10px; opacity: 0.9; }
-.estadistica-item .numero { font-size: 2.5rem; font-weight: bold; }
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 900px;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-}
-
-.ficha-content {
-    max-width: 1000px;
-    width: 95%;
-}
-
-#ficha-detalle {
-    background: #f8fbff;
-    border: 3px solid #5DADE2;
-    border-radius: 15px;
-    padding: 30px;
-    margin-bottom: 20px;
-}
-
-#ficha-detalle h4 {
-    color: #5DADE2;
-    border-bottom: 2px solid #5DADE2;
-    padding-bottom: 10px;
-    margin: 25px 0 15px 0;
-    font-size: 1.6rem;
-}
-
-#ficha-detalle p {
-    margin: 12px 0;
-    font-size: 1.2rem;
-    line-height: 1.6;
-}
-
-#ficha-detalle strong {
-    color: #2c3e50;
-}
-
-.cerrar-ficha {
-    width: auto;
-    padding: 15px 40px;
-    margin: 0 auto;
-    display: block;
-}
-
-.close-modal, .close-modal-ficha {
-    position: absolute;
-    top: 15px;
-    right: 25px;
-    font-size: 35px;
-    cursor: pointer;
-    color: #aaa;
-}
-
-.close-modal:hover, .close-modal-ficha:hover {
-    color: #000;
-}
-
-#mensaje-exito {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #5DADE2;
-    color: white;
-    padding: 18px 40px;
-    border-radius: 15px;
-    font-size: 1.4rem;
-    font-weight: bold;
-    box-shadow: 0 10px 30px rgba(93,173,226,0.4);
-    z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.6s;
-}
-.login-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #5DADE2, #ECF6FF);
-}
-
-.login-box {
-    background: white;
-    padding: 50px;
-    border-radius: 25px;
-    box-shadow: 0 20px 50px rgba(93,173,226,0.4);
-    text-align: center;
-    width: 90%;
-    max-width: 400px;
-}
-
-.login-box h1 {
-    font-size: 2.5rem;
-    color: #5DADE2;
-    margin-bottom: 10px;
-}
-
-.login-box h2 {
-    font-size: 1.3rem;
-    color: #34495e;
-    margin-bottom: 40px;
-}
-
-.login-box .form-group {
-    margin-bottom: 20px;
-    text-align: left;
-}
-
-.login-box input {
-    width: 100%;
-    padding: 15px;
-    border: 2px solid #5DADE2;
-    border-radius: 12px;
-    font-size: 1.2rem;
-}
-/* Mejoras para Ingresar Paciente - Diseño Profesional */
-fieldset.fieldset-profesional {
-    background: white;
-    border: 3px solid #5DADE2;
-    border-radius: 20px;
-    padding: 30px;
-    margin-bottom: 40px;
-    box-shadow: 0 10px 30px rgba(93,173,226,0.15);
-}
-
-fieldset.fieldset-profesional legend {
-    background: #5DADE2;
-    color: white;
-    padding: 12px 25px;
-    border-radius: 15px;
-    font-size: 1.6rem;
-    font-weight: bold;
-    box-shadow: 0 4px 15px rgba(93,173,226,0.3);
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px;
-    margin-top: 20px;
-}
-
-.form-group {
-    margin-bottom: 0;
-}
-
-.form-group label {
-    display: block;
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 10px;
-    font-size: 1.2rem;
+.form-group label{
+  display:block;
+  font-weight:bold;
+  color:#2c3e50;
+  margin-bottom:10px;
+  font-size:1.2rem;
 }
 
 .form-group input,
-.form-group select {
-    width: 100%;
-    padding: 16px;
-    border: 2px solid #ddd;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    transition: border 0.3s;
+.form-group select{
+  width:100%;
+  padding:16px;
+  border:2px solid #ddd;
+  border-radius:12px;
+  font-size:1.1rem;
+  transition:border 0.3s;
 }
 
 .form-group input:focus,
-.form-group select:focus {
-    outline: none;
-    border-color: #5DADE2;
-    box-shadow: 0 0 10px rgba(93,173,226,0.3);
+.form-group select:focus{
+  outline:none;
+  border-color:#5DADE2;
+  box-shadow:0 0 10px rgba(93,173,226,0.3);
 }
 
-.full-width {
-    grid-column: 1 / -1;
+.full-width{ grid-column:1 / -1; }
+
+.busqueda-container, .consulta-container{ text-align:center; margin:40px 0; }
+
+.buscador, .select-sede{
+  width:100%;
+  max-width:700px;
+  padding:18px;
+  font-size:1.3rem;
+  border:2px solid #5DADE2;
+  border-radius:15px;
+  margin:20px auto;
+  display:inline-block;
 }
 
-.btn-primary.grande {
-    padding: 22px 50px;
-    font-size: 1.8rem;
-    margin-top: 20px;
+#btn-buscar-modificar, #btn-buscar-ver-ficha, #btn-consultar{
+  padding:18px 40px;
+  font-size:1.4rem;
+  margin-left:20px;
+  display:inline-block;
+  width:auto;
 }
 
-.preview-image {
-    margin-top: 20px;
-    text-align: center;
+/* =========================================================
+   FIELDSETS PROFESIONALES
+========================================================= */
+fieldset.fieldset-profesional{
+  background:white;
+  border:3px solid #5DADE2;
+  border-radius:20px;
+  padding:30px;
+  margin-bottom:40px;
+  box-shadow:0 10px 30px rgba(93,173,226,0.15);
 }
 
-.preview-image img {
-    max-width: 400px;
-    max-height: 300px;
-    border: 4px solid #5DADE2;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(93,173,226,0.3);
-}
-/* Título profesional centrado - Versión equilibrada y elegante */
-.titulo-seccion {
-    text-align: center;
-    margin: 30px 0 40px 0; /* Menos espacio arriba y abajo */
-    padding: 10px 0;
+fieldset.fieldset-profesional legend{
+  background:#5DADE2;
+  color:white;
+  padding:12px 25px;
+  border-radius:15px;
+  font-size:1.6rem;
+  font-weight:bold;
+  box-shadow:0 4px 15px rgba(93,173,226,0.3);
 }
 
-.titulo-seccion h3 {
-    display: inline-block;
-    font-size: 2.4rem; /* Más moderado */
-    font-weight: bold;
-    color: white;
-    background: linear-gradient(to right, #5DADE2, #81D4FA); /* Degradado más suave */
-    padding: 14px 50px; /* Menos padding vertical */
-    border-radius: 20px;
-    box-shadow: 0 8px 25px rgba(93,173,226,0.3); /* Sombra más sutil */
-    letter-spacing: 1px;
+/* Vista previa */
+.preview-image{ margin-top:20px; text-align:center; }
+.preview-image img{
+  max-width:400px;
+  max-height:300px;
+  border:4px solid #5DADE2;
+  border-radius:15px;
+  box-shadow:0 10px 30px rgba(93,173,226,0.3);
 }
-.import-container {
-    max-width: 800px;
+
+/* =========================================================
+   TÍTULO DE SECCIÓN
+========================================================= */
+.titulo-seccion{
+  text-align:center;
+  margin:30px 0 40px 0;
+  padding:10px 0;
+}
+
+.titulo-seccion h3{
+  display:inline-block;
+  font-size:2.4rem;
+  font-weight:bold;
+  color:white;
+  background:linear-gradient(to right, #5DADE2, #81D4FA);
+  padding:14px 50px;
+  border-radius:20px;
+  box-shadow:0 8px 25px rgba(93,173,226,0.3);
+  letter-spacing:1px;
+}
+
+/* =========================================================
+   CARDS (PACIENTE)
+========================================================= */
+.paciente-card{
+  background:#f8fbff;
+  border:2px solid #5DADE2;
+  border-radius:15px;
+  padding:20px;
+  margin:15px 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+/* =========================================================
+   MODALES
+========================================================= */
+.modal{
+  display:none;
+  position:fixed;
+  z-index:1000;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  background-color:rgba(0,0,0,0.5);
+  align-items:center;
+  justify-content:center;
+}
+
+.modal-content{
+  background:white;
+  padding:30px;
+  border-radius:20px;
+  width:90%;
+  max-width:1400px;
+  max-height:90vh;
+  overflow-y:auto;
+  position:relative;
+  max-width:95vw !important;
+  overflow-x:auto;
+}
+
+.ficha-content{
+  max-width:1000px;
+  width:95%;
+}
+
+.close-modal, .close-modal-ficha{
+  position:absolute;
+  top:15px;
+  right:25px;
+  font-size:35px;
+  cursor:pointer;
+  color:#aaa;
+}
+
+.close-modal:hover, .close-modal-ficha:hover{ color:#000; }
+
+.cerrar-ficha{
+  width:auto;
+  padding:15px 40px;
+  margin:0 auto;
+  display:block;
+}
+
+/* =========================================================
+   FICHA
+========================================================= */
+#ficha-detalle{
+  background:#f8fbff;
+  border:3px solid #5DADE2;
+  border-radius:15px;
+  padding:30px;
+  margin-bottom:20px;
+}
+
+#ficha-detalle h4{
+  color:#5DADE2;
+  border-bottom:2px solid #5DADE2;
+  padding-bottom:10px;
+  margin:25px 0 15px 0;
+  font-size:1.6rem;
+}
+
+#ficha-detalle p{
+  margin:12px 0;
+  font-size:1.2rem;
+  line-height:1.6;
+}
+
+#ficha-detalle strong{ color:#2c3e50; }
+
+/* =========================================================
+   TOAST / MENSAJE ÉXITO
+========================================================= */
+#mensaje-exito{
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#5DADE2;
+  color:white;
+  padding:18px 40px;
+  border-radius:15px;
+  font-size:1.4rem;
+  font-weight:bold;
+  box-shadow:0 10px 30px rgba(93,173,226,0.4);
+  z-index:1000;
+  opacity:0;
+  transition:opacity 0.6s;
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
+.login-container{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  background:linear-gradient(135deg,#5DADE2,#ECF6FF);
+}
+
+.login-box{
+  background:white;
+  padding:50px;
+  border-radius:25px;
+  box-shadow:0 20px 50px rgba(93,173,226,0.4);
+  text-align:center;
+  width:90%;
+  max-width:400px;
+}
+
+.login-box h1{
+  font-size:2.5rem;
+  color:#5DADE2;
+  margin-bottom:10px;
+}
+
+.login-box h2{
+  font-size:1.3rem;
+  color:#34495e;
+  margin-bottom:40px;
+}
+
+.login-box .form-group{
+  margin-bottom:20px;
+  text-align:left;
+}
+
+.login-box input{
+  width:100%;
+  padding:15px;
+  border:2px solid #5DADE2;
+  border-radius:12px;
+  font-size:1.2rem;
+}
+
+/* =========================================================
+   IMPORT
+========================================================= */
+.import-container{
+  max-width:800px;
+  margin:0 auto;
+  background:white;
+  padding:40px;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(93,173,226,0.2);
+  text-align:center;
+}
+
+#import-resultado{
+  padding:20px;
+  border-radius:15px;
+  font-size:1.3rem;
+}
+
+#import-resultado.success{
+  background:#d4edda;
+  color:#155724;
+  border:2px solid #c3e6cb;
+}
+
+#import-resultado.error{
+  background:#f8d7da;
+  color:#721c24;
+  border:2px solid #f5c6cb;
+}
+
+/* =========================================================
+   FINANZAS - BOTONES
+========================================================= */
+.botones-finanzas-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+  gap:30px;
+  max-width:900px;
+  margin:40px auto;
+}
+
+.btn-finanzas{
+  background:#5DADE2;
+  color:white;
+  padding:20px 30px;
+  font-size:1.3rem;
+  font-weight:bold;
+  border:none;
+  border-radius:15px;
+  cursor:pointer;
+  box-shadow:0 8px 20px rgba(93,173,226,0.3);
+  transition:all 0.3s;
+}
+
+.btn-finanzas:hover{
+  background:#3498db;
+  transform:translateY(-5px);
+  box-shadow:0 12px 25px rgba(52,152,219,0.4);
+}
+
+/* =========================================================
+   TABLA GESTIÓN PAGOS (FINANZAS)
+========================================================= */
+.tabla-pagos-finanzas{
+  overflow-x:auto;
+  margin:25px 0;
+  border-radius:15px;
+  border:1px solid #d0e4f5;
+  box-shadow:0 6px 20px rgba(93,173,226,0.15);
+  background:white;
+}
+
+#tabla-pagos-finanzas{
+  width:100%;
+  min-width:1400px;
+  border-collapse:separate;
+  border-spacing:0 10px;
+
+  /* Ajuste compacto final */
+  table-layout:fixed;
+  font-size:0.9rem;
+}
+
+#tabla-pagos-finanzas thead th{
+  background:linear-gradient(135deg,#5DADE2,#4A9CD6);
+  color:white;
+  font-weight:600;
+  font-size:1.05rem;
+  padding:16px 12px;
+  text-align:center;
+  border-bottom:3px solid #3a8bc5;
+  white-space:nowrap;
+}
+
+#tabla-pagos-finanzas tbody td{
+  padding:14px 12px;
+  text-align:center;
+  vertical-align:middle;
+  background:white;
+  border-bottom:1px solid #e0e0e0;
+}
+
+#tabla-pagos-finanzas tbody tr:nth-child(even) td{ background:#f8fbff; }
+
+#tabla-pagos-finanzas input[type="date"],
+#tabla-pagos-finanzas select{
+  width:100%;
+  max-width:190px;
+  padding:11px 14px;
+  font-size:1rem;
+  border:2px solid #d0e4f5;
+  border-radius:30px;
+  background:white;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,0.03);
+  transition:all 0.3s ease;
+}
+
+#tabla-pagos-finanzas input[type="date"]:focus,
+#tabla-pagos-finanzas select:focus{
+  border-color:#5DADE2;
+  box-shadow:0 0 14px rgba(93,173,226,0.35);
+  outline:none;
+}
+
+#tabla-pagos-finanzas select{
+  appearance:none;
+  background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333333'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  background-size:16px;
+  padding-right:40px;
+  cursor:pointer;
+}
+
+#tabla-pagos-finanzas input[type="date"]::-webkit-calendar-picker-indicator{
+  opacity:1;
+  cursor:pointer;
+  filter:brightness(0.7);
+}
+
+/* Compactado final */
+#tabla-pagos-finanzas th,
+#tabla-pagos-finanzas td{
+  padding:8px !important;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+#tabla-pagos-finanzas .btn-primary{
+  padding:6px 12px !important;
+  font-size:0.85rem !important;
+  white-space:nowrap;
+}
+
+/* Título modal gestión */
+#modal-gestionar-pagos h3{
+  text-align:center;
+  margin:0 0 25px 0;
+  color:#2c3e50;
+  font-size:1.9rem;
+  font-weight:bold;
+  letter-spacing:0.5px;
+}
+
+/* Card estadísticas */
+.estadisticas-card{
+  background:#f8fbff;
+  border-radius:15px;
+  padding:22px;
+  margin-bottom:35px;
+  border:1px solid #d0e4f5;
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+  gap:18px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.04);
+}
+
+/* Estados (pastillas) */
+.estado-pendiente{
+  background:#fffbe6;
+  color:#856404;
+  padding:9px 20px;
+  border-radius:30px;
+  font-weight:600;
+  display:inline-block;
+  min-width:120px;
+  text-align:center;
+  box-shadow:0 2px 6px rgba(133,100,4,0.1);
+}
+
+.estado-pagado{
+  background:#e6f4ea;
+  color:#1e6b3a;
+  padding:9px 20px;
+  border-radius:30px;
+  font-weight:600;
+  display:inline-block;
+  min-width:120px;
+  text-align:center;
+  box-shadow:0 2px 6px rgba(30,107,58,0.1);
+}
+
+.estado-moroso{
+  background-color:#f8d7da !important;
+  color:#721c24 !important;
+  padding:4px 8px;
+  border-radius:6px;
+  font-weight:bold;
+}
+
+/* Responsive tabla */
+@media (max-width:768px){
+  #tabla-pagos-finanzas th,
+  #tabla-pagos-finanzas td{ padding:12px 8px; font-size:0.95rem; }
+
+  #tabla-pagos-finanzas input[type="date"],
+  #tabla-pagos-finanzas select{ max-width:160px; font-size:0.95rem; }
+
+  .estadisticas-card{ grid-template-columns:1fr; gap:12px; }
+}
+
+/* =========================================================
+   TABLA PAGO INICIAL
+========================================================= */
+#registro-form select#pago_al_ingresar{
+  width:100%;
+  padding:15px;
+  border:2px solid #ddd;
+  border-radius:10px;
+  font-size:1.1rem;
+  background:white;
+  appearance:none;
+  background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333333'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 15px center;
+  background-size:16px;
+  padding-right:40px;
+}
+
+#tabla-pago-inicial{
+  background:#f8fbff;
+  border:2px solid #5DADE2;
+  border-radius:12px;
+  padding:15px;
+  box-shadow:0 4px 15px rgba(93,173,226,0.15);
+}
+
+#tabla-inicial{
+  width:100%;
+  border-collapse:collapse;
+}
+
+#tabla-inicial thead th{
+  background:#5DADE2;
+  color:white;
+  font-weight:bold;
+  font-size:1.05rem;
+  padding:12px 10px;
+  text-align:center;
+}
+
+#tabla-inicial tbody td{
+  padding:12px 10px;
+  text-align:center;
+  border-bottom:1px solid #e0e0e0;
+  vertical-align:middle;
+}
+
+#tabla-inicial input[type="date"],
+#tabla-inicial select{
+  width:100%;
+  max-width:220px;
+  padding:10px 14px;
+  font-size:1rem;
+  border:2px solid #ddd;
+  border-radius:30px;
+  background:white;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);
+  transition:border 0.3s;
+}
+
+#tabla-inicial select{
+  appearance:none;
+  background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333333'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  background-size:14px;
+  padding-right:36px;
+}
+
+#tabla-inicial button{
+  padding:8px 16px;
+  font-size:0.95rem;
+  border-radius:30px;
+  margin:4px;
+  white-space:nowrap;
+  transition:all 0.2s;
+}
+
+#tabla-inicial button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(93,173,226,0.3);
+}
+
+/* =========================================================
+   CAMPOS MONEDA (INGRESO / ABONADO / PENDIENTE)
+========================================================= */
+.moneda-wrapper{ position:relative; }
+
+.moneda-prefix{
+  position:absolute;
+  left:8px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#555;
+  pointer-events:none;
+  font-weight:bold;
+}
+
+.input-moneda{
+  width:100%;
+  padding:8px 8px 8px 28px !important;
+  text-align:right;
+  font-weight:bold;
+  border:1px solid #ccc;
+  border-radius:8px;
+  background:#f9f9f9;
+  font-family:monospace;
+}
+
+.input-moneda[readonly]{
+  background:#f0f0f0 !important;
+  color:#555;
+  font-weight:bold;
+  cursor:default;
+  border:1px solid #ccc;
+}
+
+/* =========================================================
+   CAPACIDADES
+========================================================= */
+.capacidad-card{
+  background:#f8fbff;
+  padding:25px;
+  margin:20px 0;
+  border-radius:15px;
+  border:3px solid #5DADE2;
+  box-shadow:0 4px 15px rgba(93,173,226,0.2);
+}
+
+/* =========================================================
+   CONSULTAR SEDES (TARJETAS + GRÁFICO)
+========================================================= */
+#sedes-cards-container{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(380px, 1fr));
+  gap:25px;
+  margin-top:40px;
+}
+
+.sede-card{
+  background:white;
+  border:3px solid #28a745;
+  border-radius:15px;
+  padding:25px;
+  box-shadow:0 6px 20px rgba(40,167,69,0.15);
+  text-align:center;
+}
+
+.sede-card h3{
+  color:#28a745;
+  font-size:1.8rem;
+  margin-bottom:20px;
+  text-transform:uppercase;
+}
+
+.sede-content{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:30px;
+  flex-wrap:wrap;
+}
+
+.chart-container{
+  flex:1;
+  min-width:300px;
+  max-width:350px;
+  height:300px;
+  margin:0 auto;
+}
+
+.sede-table-container{ flex:1; min-width:300px; }
+
+.sede-table{
+  width:100%;
+  font-size:1.1rem;
+  margin-bottom:20px;
+}
+
+.sede-table td{
+  padding:12px 10px;
+  text-align:left;
+  border-bottom:1px solid #e0e0e0;
+}
+
+.sede-table td:first-child{
+  font-weight:bold;
+  color:#333;
+  width:60%;
+}
+
+.sede-table .sobre-cupos td{
+  color:#dc3545;
+  font-weight:bold;
+}
+
+@media (max-width:1024px){
+  .sede-content{ flex-direction:column; }
+  .chart-container, .sede-table-container{ min-width:100%; }
+}
+
+/* =========================================================
+   KPI DASHBOARD
+========================================================= */
+#kpi-dashboard{ text-align:center; }
+
+.kpi-gauge-container{
+  position:relative;
+  width:300px;
+  height:300px;
+  margin:40px auto;
+}
+
+.kpi-gauge-text{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  font-size:3rem;
+  font-weight:bold;
+  color:#2c3e50;
+}
+
+.kpi-sedes-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+  gap:30px;
+  margin:40px 0;
+}
+
+.kpi-sede-card{
+  background:#f8fbff;
+  padding:30px;
+  border-radius:20px;
+  border:4px solid #5DADE2;
+  box-shadow:0 8px 25px rgba(93,173,226,0.3);
+  text-align:center;
+}
+
+.kpi-sede-card h4{
+  margin:0 0 20px 0;
+  color:#2c3e50;
+  font-size:1.6rem;
+}
+
+.kpi-mini-gauge{
+  width:150px;
+  height:150px;
+  margin:20px auto;
+}
+
+.kpi-numeros{
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  font-size:1.4rem;
+}
+
+.kpi-numeros div{
+  background:white;
+  padding:15px;
+  border-radius:12px;
+  border:2px solid #5DADE2;
+}
+
+.kpi-numero.ingresos{ color:#28a745; }
+.kpi-numero.abandonos{ color:#dc3545; }
+
+/* =========================================================
+   CONTROL DE PAGOS (DASHBOARD MOROSIDAD)
+========================================================= */
+.container-pagos{
+  max-width:1400px;
+  margin:0 auto;
+  padding:30px 20px;
+  background:#ffffff;
+  border-radius:16px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.08);
+}
+
+.header-pagos{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:30px;
+}
+
+.header-pagos h2{
+  margin:0;
+  font-size:2.2rem;
+  color:#2c3e50;
+  font-weight:700;
+  text-align:center;
+  flex:1;
+}
+
+.filtros-pagos{
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px;
+  align-items:flex-end;
+  background:#f8f9fa;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:40px;
+  border:1px solid #e0e0e0;
+}
+
+.filtro-item{
+  flex:1;
+  min-width:180px;
+}
+
+.filtro-item label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:600;
+  color:#34495e;
+}
+
+.filtro-item select,
+.filtro-item input[type="month"]{
+  width:100%;
+  padding:12px;
+  border:1px solid #ced4da;
+  border-radius:8px;
+  font-size:1rem;
+  background:white;
+}
+
+.filtro-botones{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.btn-export{
+  background:#27ae60;
+  color:white;
+  border:none;
+  padding:12px 24px;
+  border-radius:8px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.btn-export:hover{ background:#219653; }
+
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+  gap:20px;
+  margin-bottom:50px;
+}
+
+.tarjeta-sede{
+  background:white;
+  border-radius:16px;
+  padding:30px 20px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.08);
+  text-align:center;
+  transition:transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.tarjeta-sede:hover{
+  transform:translateY(-8px);
+  box-shadow:0 15px 35px rgba(0,0,0,0.12);
+}
+
+.tarjeta-sede h4{
+  margin:0 0 12px;
+  font-size:1.4rem;
+  color:#2c3e50;
+}
+
+.numero-morosos{
+  font-size:3.8rem;
+  font-weight:800;
+  line-height:1;
+  margin:10px 0;
+  color:#e74c3c;
+}
+
+.tarjeta-sede.al-dia .numero-morosos{ color:#27ae60; }
+
+.monto{
+  font-size:2rem;
+  font-weight:700;
+  margin:12px 0 20px;
+  color:#e74c3c;
+}
+
+.tarjeta-sede.al-dia .monto{ color:#27ae60; }
+
+.btn-ver-morosos{
+  display:block;
+  width:100%;
+  max-width:220px;
+  margin:0 auto;
+  padding:12px 20px;
+  font-size:1.1rem;
+  font-weight:600;
+  color:white;
+  background:#2c3e50;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  transition:all 0.25s ease;
+  box-shadow:0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-ver-morosos:hover{
+  background:#34495e;
+  transform:translateY(-3px);
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
+}
+
+.btn-ver-morosos:active{
+  transform:translateY(1px);
+  box-shadow:0 2px 8px rgba(0,0,0,0.15);
+}
+
+#tabla-morosos{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+  background:white;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 15px rgba(0,0,0,0.06);
+}
+
+#tabla-morosos th{
+  background:#3498db;
+  color:white;
+  padding:14px;
+  font-weight:600;
+}
+
+#tabla-morosos td{
+  padding:14px;
+  border-bottom:1px solid #eee;
+  text-align:center;
+}
+
+.btn-marcar-pagado{
+  background:#27ae60;
+  color:white;
+  border:none;
+  padding:8px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.btn-marcar-pagado:hover{ background:#219653; }
+
+.mensaje-estado{
+  text-align:center;
+  font-size:1.4rem;
+  margin-top:40px;
+  padding:20px;
+  border-radius:12px;
+}
+/* ===================================== */
+/* ESTILOS PROFESIONALES PARA MOROSIDADES */
+/* ===================================== */
+
+.morosidad-container {
+    max-width: 1100px;
     margin: 0 auto;
-    background: white;
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(93,173,226,0.2);
-    text-align: center;
+    padding: 40px 20px;
 }
 
-#import-resultado {
-    padding: 20px;
-    border-radius: 15px;
-    font-size: 1.3rem;
-}
-
-#import-resultado.success {
-    background: #d4edda;
-    color: #155724;
-    border: 2px solid #c3e6cb;
-}
-
-#import-resultado.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 2px solid #f5c6cb;
-}
-/* Estilos para Control de Pagos */
-#lista-pagos {
-    margin-top: 20px;
-}
-
-.pago-card {
-    background: white;
-    border: 2px solid #5DADE2;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 15px 0;
+.morosidad-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 5px 15px rgba(93,173,226,0.1);
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid #5DADE2;
 }
 
-.pago-card .info {
+.morosidad-header h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 2.4rem;
+    font-weight: 700;
+    text-align: center;
     flex: 1;
 }
 
-.pago-card .info strong {
-    font-size: 1.4rem;
-    display: block;
-    margin-bottom: 5px;
-}
-
-.pago-card .estado-pendiente {
-    background: #fff3cd;
-    color: #856404;
-    padding: 8px 15px;
-    border-radius: 10px;
-    font-weight: bold;
-}
-
-.pago-card .estado-atrasado {
-    background: #f8d7da;
-    color: #721c24;
-    padding: 8px 15px;
-    border-radius: 10px;
-    font-weight: bold;
-}
-
-.pago-card .estado-pagado {
-    background: #d4edda;
-    color: #155724;
-    padding: 8px 15px;
-    border-radius: 10px;
-    font-weight: bold;
-}
-
-.btn-pagar {
-    background: #28a745;
-    color: white;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1.1rem;
-}
-
-.btn-pagar:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-}
-/* Modal para resumen de pagos en Control de Pagos */
-#pagos-resumen-modal .modal-content {
-    max-width: 900px;
-    width: 95%;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-/* Estados de pago en Control de Pagos */
-.estado-pagado {
-    color: #155724;
-    background: #d4edda;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-weight: bold;
-}
-
-.estado-pendiente {
-    color: #856404;
-    background: #fff3cd;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-weight: bold;
-}
-
-.estado-atrasado {
-    color: #721c24;
-    background: #f8d7da;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-weight: bold;
-}
-
-.btn-pagar {
-    background: #28a745;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1.1rem;
-}
-
-.btn-pagar.disabled, .btn-pagar:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-}
-
-
-
-
-
-
-
-/* Resumen de pagos por sede - cuadros más pequeños y ordenados */
-#resumen-pagos-sedes {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* máximo 3-4 por fila */
-    gap: 25px;
-    margin-top: 40px;
-    justify-items: center; /* centra los cuadros */
-}
-
-.resumen-sede-card {
+.morosidad-card {
     background: white;
-    border: 3px solid #5DADE2;
-    border-radius: 20px;
-    width: 280px; /* ancho fijo más pequeño */
-    padding: 20px;
-    box-shadow: 0 8px 25px rgba(93,173,226,0.2);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 8px 30px rgba(93, 173, 226, 0.15);
+    margin-bottom: 40px;
     text-align: center;
 }
 
-.resumen-sede-card h4 {
+.morosidad-card h3 {
     color: #2c3e50;
-    margin-bottom: 15px;
-    font-size: 1.4rem;
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+    font-weight: 600;
 }
 
-.resumen-sede-card .numero {
-    font-size: 3rem;
-    font-weight: bold;
-    color: #5DADE2;
-    margin: 10px 0;
-}
-
-.resumen-sede-card .label {
-    font-size: 1.1rem;
-    color: #666;
-    margin-bottom: 20px;
-    display: block;
-}
-
-.resumen-sede-card button {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.2rem;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-    #resumen-pagos-sedes {
-        grid-template-columns: 1fr 1fr;
-    }
-    .resumen-sede-card {
-        width: 100%;
-        max-width: 300px;
-    }
-}
-
-@media (max-width: 600px) {
-    #resumen-pagos-sedes {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Grid responsive para resúmenes de sedes */
-.resumen-sede-grid {
+/* Filtros en grid elegante */
+.filtros-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 30px;
-    margin-top: 40px;
-    justify-items: center;
+    align-items: end;
 }
 
-/* Card general más destacado */
-.resumen-sede-card.general {
-    grid-column: 1 / -1;
-    background: linear-gradient(135deg, #5DADE2, #81D4FA);
-    color: white;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 15px 40px rgba(93,173,226,0.4);
+.filtro-item {
+    text-align: left;
 }
 
-/* Cards normales */
-.resumen-sede-card {
-    background: white;
-    border: 4px solid #5DADE2;
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 10px 30px rgba(93,173,226,0.2);
-    text-align: center;
+.filtro-item label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #34495e;
+    font-size: 1.1rem;
+}
+
+.filtro-item select {
     width: 100%;
-    max-width: 380px;
-}
-
-/* Números grandes y colores */
-.resumen-sede-card .numero {
-    font-size: 3rem;
-    font-weight: bold;
-    color: #5DADE2;
-}
-
-.resumen-sede-card .numero.grande {
-    font-size: 4rem;
-}
-
-.resumen-sede-card .numero.total-num {
-    font-size: 3.5rem;
-    color: #2c3e50;
-}
-
-/* Estadísticas dentro del card */
-.estadistica-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.estadistica-item {
-    background: #f8fbff;
-    padding: 15px;
+    padding: 14px 16px;
+    border: 2px solid #d1e8ff;
     border-radius: 12px;
-    border: 2px solid #5DADE2;
+    font-size: 1.1rem;
+    background: #f9fcff;
+    transition: all 0.3s;
 }
 
-.estadistica-item.total {
-    grid-column: 1 / -1;
+.filtro-item select:focus {
+    border-color: #5DADE2;
+    box-shadow: 0 0 0 4px rgba(93, 173, 226, 0.15);
+    outline: none;
+}
+
+.filtro-boton {
+    text-align: center;
+}
+
+/* Tablas profesionales */
+.tabla-morosidad {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+}
+
+.tabla-morosidad th,
+.tabla-morosidad td {
+    padding: 16px 20px;
+    text-align: center;
+    background: white;
+}
+
+.tabla-morosidad th {
     background: #5DADE2;
     color: white;
-    font-size: 1.4rem;
+    font-weight: 600;
+    border-radius: 12px 12px 0 0;
 }
 
-.estadistica-item .label {
-    display: block;
+.tabla-morosidad tbody tr {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    border-radius: 12px;
+    transition: transform 0.2s;
+}
+
+.tabla-morosidad tbody tr:hover {
+    transform: translateY(-3px);
+}
+
+.tabla-morosidad td:first-child {
+    border-radius: 12px 0 0 12px;
+}
+
+.tabla-morosidad td:last-child {
+    border-radius: 0 12px 12px 0;
+}
+
+/* Botones de acción */
+.btn-listar,
+.btn-gestion {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-listar:hover,
+.btn-gestion:hover {
+    background: #219653;
+    transform: scale(1.08);
+}
+
+.detalle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.detalle-header h3 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .filtros-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .morosidad-card {
+        padding: 25px 15px;
+    }
+}
+#btn-consultar-morosidades {
+    background: linear-gradient(135deg, #5DADE2 0%, #3498DB 100%);
+    color: white;
+    border: none;
+    padding: 12px 32px;          /* ← Reducido: antes era 16px 40px */
+    font-size: 1.1rem;           /* ← Reducido: antes 1.3rem */
+    font-weight: 600;
+    border-radius: 40px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(93, 173, 226, 0.3);
+    transition: all 0.3s ease;
+    min-width: 220px;
+    margin-top: 15px;
+}
+
+#btn-consultar-morosidades:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(93, 173, 226, 0.4);
+    background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+}
+/* Botón Volver al Resumen - Mejorado y consistente */
+.detalle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.detalle-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+#btn-volver-resumen {
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+    color: white;
+    border: none;
+    padding: 12px 28px;
     font-size: 1.1rem;
-    margin-bottom: 8px;
-    opacity: 0.9;
+    font-weight: 600;
+    border-radius: 40px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(127, 140, 141, 0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+#btn-volver-resumen:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(127, 140, 141, 0.4);
+    background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7d 100%);
+}
+
+#btn-volver-resumen:active {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(127, 140, 141, 0.3);
+}
+
+/* Icono ← más visible */
+#btn-volver-resumen::before {
+    content: '←';
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+/* Ocultar botón y título "Finanzas" residual en Morosidades */
+#seccion-pagos .btn-finanzas,
+#seccion-pagos [class*="finanzas"],
+#seccion-pagos .botones-finanzas-grid,
+#seccion-pagos button:contains("Finanzas"),
+#seccion-pagos h2:contains("Finanzas") {
+    display: none !important;
+}
+.btn-enviar-cobro {
+    background: #25D366; /* Verde WhatsApp */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    margin-left: 8px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-enviar-cobro:hover {
+    background: #128C7E;
+    transform: translateY(-2px);
+}
+/* Botón Gestionar - Celeste, igual estilo que Enviar Cobro */
+.btn-gestion-pago {
+    background: #5DADE2; /* Celeste principal del sistema */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    margin-left: 8px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-gestion-pago:hover {
+    background: #3498DB; /* Azul más oscuro en hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(93, 173, 226, 0.4);
 }

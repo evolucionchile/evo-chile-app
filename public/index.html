@@ -21,7 +21,7 @@
                 </div>
             </header>
 
-            <!-- MENÚ PRINCIPAL -->
+            <!-- MENÚ PRINCIPAL (sin el botón de Control de Pagos) -->
             <section id="menu-principal">
                 <h3>Seleccione una opción</h3>
                 <div class="botones-grid">
@@ -41,9 +41,9 @@
                         <span class="icono">📊</span>
                         <span>Consultar Sedes</span>
                     </button>
-                    <button class="btn-menu" data-seccion="pagos">
+                    <button class="btn-menu" data-seccion="finanzas">
                         <span class="icono">💰</span>
-                        <span>Control de Pagos</span>
+                        Finanzas
                     </button>
                     <button class="btn-menu" data-seccion="documentos-institucion">
                         <span class="icono">📄</span>
@@ -65,12 +65,20 @@
                         <span class="icono">📤</span>
                         <span>Carga Masiva (Pruebas)</span>
                     </button>
+                    <button class="btn-menu" data-seccion="capacidad">
+                        <span class="icono-menu">👥</span>
+                        Gestionar Capacidad Pacientes por Sede
+                    </button>
+                    <button class="btn-menu" data-seccion="kpi">
+                        <span class="icono-menu">📊</span>
+                        Consultar KPI
+                    </button>
                 </div>
             </section>
 
             <!-- INGRESAR PACIENTE -->
             <section id="seccion-ingresar" class="seccion-oculta">
-                <button class="btn-volver">← Volver</button>
+                <button class="btn-volver">← Menú Principal</button>
                 <div class="titulo-seccion">
                     <h3>Ingresar Nuevo Paciente</h3>
                 </div>
@@ -115,22 +123,7 @@
                                 <label>Fecha de ingreso *</label>
                                 <input type="date" id="fecha_ingreso" required>
                             </div>
-                            
 
-                            <div class="form-group">
-                                <label>Etapa</label>
-                                <select id="etapa">
-                                    <option value="">Ninguna</option>
-                                    <option value="Compromiso">Compromiso</option>
-                                    <option value="Grupo 4">Grupo 4</option>
-                                    <option value="Grupo 3">Grupo 3</option>
-                                    <option value="Grupo 2">Grupo 2</option>
-                                    <option value="Grupo 1">Grupo 1</option>
-                                    <option value="Nivel 1">Nivel 1</option>
-                                    <option value="Nivel 2">Nivel 2</option>
-                                    <option value="Nivel 3">Nivel 3</option>
-                                </select>
-                            </div>
                             <div class="form-group">
                                 <label>Sexo *</label>
                                 <select id="sexo" required>
@@ -175,7 +168,7 @@
                                 <label>Dirección</label>
                                 <input type="text" id="direccion" placeholder="Ej: Calle Los Alamos 123, Comuna, Ciudad">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label>Región *</label>
                                 <select id="region" required>
@@ -217,7 +210,7 @@
                                 <label>Tipo de documento apoderado</label>
                                 <select id="tipo_documento_apoderado">
                                     <option value="">Ninguno</option>
-                                    <option value="rut">RUT Chileno</option>
+                                    <option value="rut" selected>RUT Chileno</option>  <!-- ← Aquí el cambio -->
                                     <option value="pasaporte">Pasaporte</option>
                                     <option value="cedula">Cédula Extranjera</option>
                                     <option value="otro">Otro ID</option>
@@ -241,6 +234,32 @@
                                 <label>Dirección del apoderado</label>
                                 <input type="text" id="direccion_apoderado" placeholder="Ej: Avenida Siempre Viva 742, Comuna">
                             </div>
+                            <div class="form-group">
+                                <label>Región apoderado</label>
+                                <select id="region_apoderado">
+                                    <option value="">Seleccionar región</option>
+                                    <option value="Arica y Parinacota">Arica y Parinacota</option>
+                                    <option value="Tarapacá">Tarapacá</option>
+                                    <option value="Antofagasta">Antofagasta</option>
+                                    <option value="Atacama">Atacama</option>
+                                    <option value="Coquimbo">Coquimbo</option>
+                                    <option value="Valparaíso">Valparaíso</option>
+                                    <option value="Metropolitana">Metropolitana</option>
+                                    <option value="O'Higgins">O'Higgins</option>
+                                    <option value="Maule">Maule</option>
+                                    <option value="Ñuble">Ñuble</option>
+                                    <option value="Biobío">Biobío</option>
+                                    <option value="Araucanía">Araucanía</option>
+                                    <option value="Los Ríos">Los Ríos</option>
+                                    <option value="Los Lagos">Los Lagos</option>
+                                    <option value="Aysén">Aysén</option>
+                                    <option value="Magallanes">Magallanes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Comuna apoderado</label>
+                                <input type="text" id="comuna_apoderado" placeholder="Ej: Temuco">
+                            </div>
                         </div>
                     </fieldset>
 
@@ -255,7 +274,31 @@
                                 <label>Día de vencimiento del pago (1-31)</label>
                                 <input type="number" id="fecha_vencimiento_pago" value="5" min="1" max="31" required>
                             </div>
+                            <div class="form-group">
+                                <label>Realiza pago al ingresar</label>
+                                <select id="pago_al_ingresar">
+                                    <option value="no" selected>No</option>
+                                    <option value="si">Sí</option>
+                                </select>
+                            </div>
                         </div>
+
+                        <!-- Tabla dinámica que aparece solo si selecciona "Sí" -->
+                            <div id="tabla-pago-inicial" style="display:none; margin-top:30px; background:#f8fbff; padding:20px; border-radius:12px; border:2px solid #5DADE2; box-shadow:0 4px 15px rgba(93,173,226,0.15);">
+                                <h4 style="text-align:center; color:#2c3e50; margin-bottom:15px;">Pago Inicial al Ingresar</h4>
+                                <table id="tabla-inicial" style="width:100%; border-collapse:collapse;">
+                                    <thead>
+                                        <tr style="background:#5DADE2; color:white;">
+                                            <th>Mes de pago</th>
+                                            <th>Fecha de pago</th>
+                                            <th>Forma de pago</th>
+                                            <th>Valor pagado ($)</th> <!-- Nueva columna -->
+                                            <th>Comprobante</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-pago-inicial"></tbody>
+                                </table>
+                            </div>
                     </fieldset>
 
                     <!-- OTROS CONTACTOS - 3 FILAS ORDENADAS (Nombre | Parentesco | Teléfono) -->
@@ -326,7 +369,7 @@
 
             <!-- MODIFICAR PACIENTE -->
             <section id="seccion-modificar" class="seccion-oculta">
-                <button class="btn-volver">← Volver</button>
+                <button class="btn-volver">← Menú Principal</button>
                 <div class="titulo-seccion">
                     <h3>Modificar Paciente</h3>
                 </div>
@@ -339,7 +382,7 @@
 
             <!-- VER FICHA PACIENTE -->
             <section id="seccion-ver-ficha" class="seccion-oculta">
-                <button class="btn-volver">← Volver</button>
+                <button class="btn-volver">← Menú Principal</button>
                 <div class="titulo-seccion">
                     <h3>Ver Ficha Paciente</h3>
                 </div>
@@ -354,70 +397,30 @@
             <section id="seccion-consultar-sedes" class="seccion-oculta">
                 <button class="btn-volver">← Volver</button>
                 <div class="titulo-seccion">
-                    <h3>Consultar Pacientes por Sede</h3>
+                    <h3>Consultar Sedes</h3>
                 </div>
-                <div class="consulta-container">
-                    <select id="select-sede" class="select-sede">
-                        <option value="">Todas las sedes</option>
-                        <option value="Olea">Olea</option>
-                        <option value="Naltahua">Naltahua</option>
-                        <option value="Femenino uno">Femenino uno</option>
-                        <option value="Femenino dos">Femenino dos</option>
-                        <option value="Polpaico">Polpaico</option>
-                        <option value="Buin">Buin</option>
-                    </select>
-                    <button id="btn-consultar" class="btn-primary">Consultar</button>
-                </div>
-
-                <div id="resumen-container" style="margin-top:40px;"></div>
-
-                <div id="lista-sedes" style="margin-top:60px;"></div>
-            </section>
-
-            <!-- CONTROL DE PAGOS -->
-            <section id="seccion-pagos" class="seccion-oculta">
-                <button class="btn-volver">← Volver</button>
-                <div class="titulo-seccion">
-                    <h3>Control de Pagos Mensuales</h3>
-                </div>
-
-                <!-- Buscador principal -->
-                <div id="buscador-principal" class="busqueda-container" style="margin:30px 0;">
-                    <input type="text" id="buscar-pago-principal" placeholder="Buscar por nombre, apellido o número de documento en todas las sedes" class="buscador">
-                    <button id="btn-buscar-pago-principal" class="btn-primary">Buscar</button>
-                </div>
-
-                <!-- Resumen por sede (sin mensaje de carga largo) -->
-                <div id="resumen-pagos-sedes" class="resumen-sede-grid">
-                    <!-- Los cuadros se generan con JS -->
-                </div>
-
-                <!-- Lista detallada (con botones arriba) -->
-                <div id="lista-pagos-detalle" style="display:none;">
-                    <!-- Botones arriba (excluidos del evento general) -->
-                    <div style="text-align:center; margin:20px 0 40px 0;">
-                        <button class="btn-volver btn-no-general" onclick="ocultarListaDetalle()">
-                            ← Volver al Resumen de Pagos
-                        </button>
-                        <button class="btn-volver btn-no-general" style="margin-left:20px;" onclick="volverAlMenuPrincipal()">
-                            ← Volver al Menú Principal
-                        </button>
+                <div class="container" id="dashboard-sedes">
+                    <div style="text-align:center; margin:40px 0;">
+                        <label style="font-size:1.4rem; font-weight:bold;">Seleccionar sede:</label>
+                        <select id="select-sede-consultar" style="padding:12px; border-radius:8px; border:1px solid #5DADE2; margin:0 20px; width:250px;">
+                            <option value="">Todas las sedes</option>
+                            <option value="Olea">Olea</option>
+                            <option value="Naltahua">Naltahua</option>
+                            <option value="Femenino uno">Femenino uno</option>
+                            <option value="Femenino dos">Femenino dos</option>
+                            <option value="Polpaico">Polpaico</option>
+                            <option value="Buin">Buin</option>
+                        </select>
+                        <button id="btn-consultar-sedes" class="btn-primary grande">Consultar</button>
                     </div>
 
-                    <h3 style="text-align:center; margin-bottom:30px; color:#2c3e50;" id="titulo-lista-sede"></h3>
-
-                    <div class="busqueda-container" style="margin-bottom:30px;">
-                        <input type="text" id="buscar-pago-detalle" placeholder="Buscar por nombre, apellido o número de documento" class="buscador">
-                        <button id="btn-buscar-pago-detalle" class="btn-primary">Buscar</button>
-                    </div>
-
-                    <div id="contenido-lista-pagos"></div>
+                    <div id="sedes-cards-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 25px; margin-top: 40px;"></div>
                 </div>
-            </section>
+            </section> 
 
             <!-- PSIQUIATRÍA -->
             <section id="seccion-psiquiatria" class="seccion-oculta">
-                <button class="btn-volver">← Volver</button>
+                <button class="btn-volver">← Menú Principal</button>
                 <div class="titulo-seccion">
                     <h3>Control Psiquiátrico</h3>
                 </div>
@@ -439,7 +442,7 @@
 
             <!-- ELIMINAR MASIVO -->
             <section id="seccion-eliminar-masivo" class="seccion-oculta">
-                <button class="btn-volver">← Volver</button>
+                <button class="btn-volver">← Menú Principal</button>
                 <div class="titulo-seccion">
                     <h3>Eliminar Todos los Pacientes</h3>
                 </div>
@@ -472,7 +475,7 @@
 
             <!-- EVALUACIONES SEMANALES -->
             <section id="seccion-evaluaciones-semanales" class="seccion-oculta">
-                <button class="btn-volver">← Volver</button>
+                <button class="btn-volver">← Menú Principal</button>
                 <div class="titulo-seccion">
                     <h3>Evaluaciones Semanales</h3>
                 </div>
@@ -494,7 +497,7 @@
 
             <!-- CARGA MASIVA PARA PRUEBAS -->
             <section id="seccion-carga-masiva" class="seccion-oculta">
-                <button class="btn-volver">← Volver</button>
+                <button class="btn-volver">← Menú Principal</button>
                 <div class="titulo-seccion">
                     <h3>Carga Masiva de Pacientes (Solo Pruebas)</h3>
                 </div>
@@ -504,10 +507,10 @@
                         <h4 style="color:#1565c0; margin-bottom:15px;">ℹ️ Instrucciones</h4>
                         <p style="font-size:1.2rem; line-height:1.8;">
                             Sube un archivo <strong>Excel (.xlsx)</strong> o <strong>CSV</strong> con las siguientes columnas en este orden:<br><br>
-                            <strong>NOMBRE | NÚMERO DE DOCUMENTO | SEDE | FECHA DE INGRESO | ESTADO | ETAPA</strong><br><br>
+                            <strong>NOMBRE | NÚMERO DE DOCUMENTO | ESTADO | FECHA ESTADO | FECHA INGRESO | SEDE</strong><br><br>
                             Ejemplo de fila:<br>
-                            Juan Pérez | 12.345.678-9 | Olea | 29-12-2025 | Activo | Compromiso<br><br>
-                            Los demás campos se dejarán vacíos o con valores por defecto. Se asumirá RUT Chileno para carga masiva.
+                            Juan Pérez | 12.345.678-9 | Abandono | 15-01-2026 | 01-12-2025 | Olea<br><br>
+                            El tipo de documento será siempre RUT chileno. Etapa por defecto: Compromiso.
                         </p>
                     </div>
 
@@ -523,7 +526,7 @@
 
             <!-- DOCUMENTOS EVOLUCIÓN CHILE -->
             <section id="seccion-documentos-institucion" class="seccion-oculta">
-                <button class="btn-volver">← Volver</button>
+                <button class="btn-volver">← Menú Principal</button>
                 <div class="titulo-seccion">
                     <h3>Documentos Institucionales Evolución Chile</h3>
                 </div>
@@ -551,61 +554,258 @@
                 </div>
             </section>
 
+            <section id="seccion-capacidad">
+                <div class="container">
+                    <h2>Gestionar Capacidad Pacientes por Sede</h2>
+                    <div id="lista-capacidades"></div>
+                    <button class="btn-volver">Volver</button>
+                </div>
+            </section>
 
+            <!-- CONSULTAR KPI -->
+            <section id="seccion-kpi" class="seccion-oculta">
+                <button class="btn-volver">← Menú Principal</button>
+                <div class="titulo-seccion">
+                    <h3>Consultar KPI</h3>
+                </div>
 
-            <!-- Modal para Control de Pagos (desde la lista) -->
-            <div id="modal-control-pagos" class="modal">
-                <div class="modal-content" style="max-width:900px;">
-                    <span class="close-modal" onclick="cerrarModalPagos()">&times;</span>
-                    <h3>Control de Pagos Mensuales</h3>
+                <div class="container">
+                    <h4 style="text-align:center; margin:30px 0; color:#2c3e50;">Ver KPI</h4>
 
-                    <div class="estadisticas-card" style="margin:20px 0; padding:25px;">
-                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; font-size:1.2rem;">
-                            <div><strong>Nombre:</strong> <span id="modal-pagos-nombre"></span></div>
-                            <div><strong>Documento:</strong> <span id="modal-pagos-rut"></span></div>
-                            <div><strong>Sede:</strong> <span id="modal-pagos-sede"></span></div>
-                            <div><strong>Valor mensualidad:</strong> $<span id="modal-pagos-monto"></span></div>
+                    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin:30px 0;">
+                        <div>
+                            <label style="font-weight:bold;">Sede:</label>
+                            <select id="kpi-select-sede" style="padding:10px; border-radius:8px; border:1px solid #5DADE2; margin-left:10px;">
+                                <option value="">Todas las sedes</option>
+                                <option value="Olea">Olea</option>
+                                <option value="Naltahua">Naltahua</option>
+                                <option value="Femenino uno">Femenino uno</option>
+                                <option value="Femenino dos">Femenino dos</option>
+                                <option value="Polpaico">Polpaico</option>
+                                <option value="Buin">Buin</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="font-weight:bold;">Año:</label>
+                            <select id="kpi-select-anio" style="padding:10px; border-radius:8px; border:1px solid #5DADE2; margin-left:10px;">
+                                <option value="">Todos los años</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="font-weight:bold;">Mes:</label>
+                            <select id="kpi-select-mes" style="padding:10px; border-radius:8px; border:1px solid #5DADE2; margin-left:10px;">
+                                <option value="">Todos los meses</option>
+                                <option value="1">Enero</option>
+                                <option value="2">Febrero</option>
+                                <option value="3">Marzo</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Mayo</option>
+                                <option value="6">Junio</option>
+                                <option value="7">Julio</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <button id="btn-consultar-kpi" class="btn-primary grande" style="margin-left:20px;">Consultar</button>
                         </div>
                     </div>
 
-                    <h4 style="margin:30px 0 20px; color:#2c3e50;">Historial de Pagos (12 meses desde ingreso)</h4>
-                    <div class="form-grid" id="modal-pagos-grid" style="margin-bottom:40px;">
-                        <!-- Los meses se generan con JS -->
+                    <div id="kpi-dashboard" style="margin-top:40px;"></div>
+                </div>
+            </section>
+            <!-- CONTROL DE PAGOS - VERSIÓN PROFESIONAL CON BOTÓN VER MOROSOS -->
+            <section id="seccion-pagos" class="seccion-oculta">
+    <div class="morosidad-container">
+        <div class="morosidad-header">
+            <h2>Morosidades</h2>
+        </div>
+
+        <!-- Fase 1: Filtros (como en tu primera imagen) -->
+        <div id="fase-filtros">
+            <h3>Filtrar Morosidades</h3>
+            <div class="filtros-grid">
+                <div class="filtro-item">
+                    <label>Sede</label>
+                    <select id="morosidad-sede">
+                        <option value="">Todas las sedes</option>
+                        <option value="Olea">Olea</option>
+                        <option value="Naltahua">Naltahua</option>
+                        <option value="Femenino uno">Femenino uno</option>
+                        <option value="Femenino dos">Femenino dos</option>
+                        <option value="Polpaico">Polpaico</option>
+                        <option value="Buin">Buin</option>
+                    </select>
+                </div>
+                <div class="filtro-item">
+                    <label>Año</label>
+                    <select id="morosidad-anio"></select>
+                </div>
+                <div class="filtro-item">
+                    <label>Mes</label>
+                    <select id="morosidad-mes">
+                        <option value="">Todos</option>
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
+                <div class="filtro-item">
+                    <button id="btn-consultar-morosidades" class="btn-consultar">
+                        Consultar Morosidades
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fase 2: Resumen (oculta al inicio) -->
+        <div id="resumen-morosidad" style="display:none;">
+            <h3>Resumen de Morosidades</h3>
+            <table class="tabla-morosidad">
+                <thead>
+                    <tr>
+                        <th>Sede</th>
+                        <th>Morosos</th>
+                        <th>Deuda Total</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-resumen-morosidad"></tbody>
+            </table>
+        </div>
+
+        <!-- Fase 3: Detalle (oculta al inicio) -->
+        <div id="detalle-morosidad" style="display:none;">
+            <div class="detalle-header">
+                <h3>Lista de Morosos</h3>
+                <button id="btn-volver-resumen">← Volver al Resumen</button>
+            </div>
+            <table class="tabla-morosidad">
+                <thead>
+                    <tr>
+                        <th>Sede</th>
+                        <th>Nombre</th>
+                        <th>Mes/Año</th>
+                        <th>Por Pagar</th>
+                        <th>Días de Mora</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-detalle-morosidad"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+    
+</section>
+            <!-- SECCIÓN FINANZAS -->
+            <section id="seccion-finanzas" class="seccion-oculta">
+                <button class="btn-volver">← Menú Principal</button>
+                <div class="botones-finanzas-grid">
+                    <button class="btn-finanzas" id="btn-modificar-pago">
+                        Modificar Pago
+                    </button>
+                    <button class="btn-finanzas" id="btn-consultar-pagos">
+                        Consultar Pagos
+                    </button>
+                   <button class="btn-finanzas" id="btn-ver-morosos">
+                        Ver Morosos
+                    </button>
+                </div>
+
+                <div id="subseccion-modificar-pago" style="display:none;">
+                    <div class="titulo-seccion">
+                        <h3>Modificar Pago</h3>
                     </div>
 
-                    <div style="text-align:center;">
-                        <button class="btn-primary grande" id="btn-guardar-pagos-modal">Guardar Cambios en Pagos</button>
+                    <div class="busqueda-container">
+                        <input type="text" id="buscar-modificar-pago" placeholder="Buscar por nombre o número de documento" class="buscador">
+                        <button id="btn-buscar-modificar-pago" class="btn-primary">Buscar</button>
+                    </div>
+
+                    <div id="resultados-modificar-pago"></div>
+                </div>
+            </section>
+
+            <!-- MODAL PARA EDITAR PACIENTE -->
+            <div id="edit-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <h3>Editar Paciente</h3>
+                    <form id="edit-form"></form>
+                </div>
+            </div>
+
+            <!-- MODAL PARA VER FICHA COMPLETA -->
+            <div id="ficha-modal" class="modal">
+                <div class="modal-content ficha-content">
+                    <span class="close-modal-ficha">&times;</span>
+                    <h3>Ficha Completa del Paciente</h3>
+                    <div id="ficha-detalle"></div>
+                    <button class="btn-primary cerrar-ficha">Cerrar Ficha</button>
+                </div>
+            </div>
+
+            <!-- MODAL GESTIÓN FINANCIERA DE PAGOS -->
+            <div id="modal-gestionar-pagos" class="modal">
+                <div class="modal-content" style="max-width:1400px; width:95%;">
+                    <span class="close-modal" onclick="cerrarModalGestionarPagos()">&times;</span>
+                    <h3>Gestión Financiera de Pagos - <span id="modal-gestionar-nombre"></span></h3>
+
+                    <div class="estadisticas-card" style="margin:20px 0; padding:25px; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; font-size:1.2rem;">
+                        <div><strong>Documento:</strong> <span id="modal-gestionar-documento"></span></div>
+                        <div><strong>Sede:</strong> <span id="modal-gestionar-sede"></span></div>
+                        <div><strong>Monto mensual:</strong> $<span id="modal-gestionar-monto"></span></div>
+                        <div><strong>Día de vencimiento:</strong> <span id="modal-gestionar-dia-vencimiento"></span> de cada mes</div>
+                    </div>
+
+                    <h4 style="margin:30px 0 20px; color:#2c3e50;">Historial de Pagos (12 meses desde ingreso)</h4>
+
+                    <div class="tabla-pagos-finanzas">
+                        <table id="tabla-pagos-finanzas">
+                            <thead>
+                                <tr>
+                                    <th>Mes y Año a pagar</th>
+                                    <th>Fecha de pago</th>
+                                    <th>Forma de pago</th>
+                                    <th>Estado</th>
+                                    <th>Comprobante</th>
+                                    <th>Factura</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filas generadas por JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
+            <div id="mensaje-exito"></div>
         </div> <!-- CIERRE DEL CONTAINER PRINCIPAL -->
 
-        <!-- Modal para editar paciente -->
-        <div id="edit-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h3>Editar Paciente</h3>
-                <form id="edit-form"></form>
-            </div>
-        </div>
-
-        <!-- Modal para ver ficha completa -->
-        <div id="ficha-modal" class="modal">
-            <div class="modal-content ficha-content">
-                <span class="close-modal-ficha">&times;</span>
-                <h3>Ficha Completa del Paciente</h3>
-                <div id="ficha-detalle"></div>
-                <button class="btn-primary cerrar-ficha">Cerrar Ficha</button>
-            </div>
-        </div>
-
-        <div id="mensaje-exito"></div>
-    </div>
 <script src="https://unpkg.com/pizzip@3.1.1/dist/pizzip.js"></script>
 <script src="https://unpkg.com/pizzip@3.1.1/dist/pizzip-utils.js"></script>
 <script src="https://unpkg.com/docxtemplater@3.28.1/build/docxtemplater.js"></script>
 <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-    <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+
 </body>
 </html>
