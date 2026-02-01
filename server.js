@@ -3,7 +3,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const port = 3000;
