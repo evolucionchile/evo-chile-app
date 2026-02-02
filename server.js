@@ -190,7 +190,41 @@ db.serialize(() => {
             capacidad INTEGER DEFAULT 0
         )
     `);
+db.run(`
+        CREATE TABLE IF NOT EXISTS productos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            unidad TEXT NOT NULL,
+            stock_minimo INTEGER DEFAULT 0,
+            proveedor TEXT,
+            fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
 
+    db.run(`
+        CREATE TABLE IF NOT EXISTS stock_sede (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            producto_id INTEGER NOT NULL,
+            sede TEXT NOT NULL,
+            stock_actual INTEGER DEFAULT 0,
+            FOREIGN KEY (producto_id) REFERENCES productos(id),
+            UNIQUE(producto_id, sede)
+        )
+    `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS movimientos_stock (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            producto_id INTEGER NOT NULL,
+            sede TEXT NOT NULL,
+            tipo TEXT NOT NULL CHECK(tipo IN ('entrada', 'salida')),
+            cantidad INTEGER NOT NULL,
+            momento TEXT NOT NULL CHECK(momento IN ('desayuno', 'almuerzo', 'once', 'otro')),
+            fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+            descripcion TEXT,
+            FOREIGN KEY (producto_id) REFERENCES productos(id)
+        )
+    `);
     // Inicializar capacidades con 0 si no existen
     const sedes = ['Olea', 'Naltahua', 'Femenino uno', 'Femenino dos', 'Polpaico', 'Buin'];
     sedes.forEach(s => {
@@ -991,10 +1025,290 @@ app.post('/api/subir-facturas', uploadFacturas.array('facturas'), (req, res) => 
         res.json({ success: true, files: uploadedFiles });
     });
 });
+app.post('/api/productos', (req, res) => {
+    const { nombre, unidad, minimo, proveedor, sedeInicial, stockInicial } = req.body;
 
+    if (!nombre || !unidad) {
+        return res.status(400).json({ error: 'Nombre y unidad son obligatorios' });
+    }
+
+    db.run(
+        `INSERT OR IGNORE INTO productos (nombre, unidad, stock_minimo, proveedor) VALUES (?, ?, ?, ?)`,
+        [nombre, unidad, minimo || 0, proveedor || null],
+        function (err) {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+
+            let productoId = this.lastID;
+
+            // Si ya existía (INSERT OR IGNORE no inserta), buscar el ID
+            if (!productoId) {
+                db.get(`SELECT id FROM productos WHERE nombre = ?`, [nombre], (err, row) => {
+                    if (err) return res.status(500).json({ error: err.message });
+                    productoId = row.id;
+                    asignarStockInicial(productoId);
+                });
+            } else {
+                asignarStockInicial(productoId);
+            }
+
+            function asignarStockInicial(id) {
+                if (sedeInicial && stockInicial > 0) {
+                    db.run(
+                        `INSERT OR REPLACE INTO stock_sede (producto_id, sede, stock_actual) VALUES (?, ?, ?)`,
+                        [id, sedeInicial, stockInicial],
+                        (err) => {
+                            if (err) console.error('Error al asignar stock inicial:', err);
+                        }
+                    );
+                }
+                res.json({ success: true, id });
+            }
+        }
+    );
+});
+app.post('/api/salidas', (req, res) => {
+    const { productoId, sede, cantidad, momento, descripcion } = req.body;
+
+    if (!productoId || !sede || !cantidad || !momento) {
+        return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    }
+
+    db.get(`SELECT stock_actual FROM stock_sede WHERE producto_id = ? AND sede = ?`, [productoId, sede], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const stockActual = row ? row.stock_actual : 0;
+
+        if (cantidad > stockActual) {
+            return res.status(400).json({ error: 'No hay stock suficiente' });
+        }
+
+        // Registrar movimiento
+        db.run(
+            `INSERT INTO movimientos_stock (producto_id, sede, tipo, cantidad, momento, descripcion) VALUES (?, ?, 'salida', ?, ?, ?)`,
+            [productoId, sede, cantidad, momento, descripcion || null],
+            function (err) {
+                if (err) return res.status(500).json({ error: err.message });
+
+                // Restar stock
+                db.run(
+                    `UPDATE stock_sede SET stock_actual = stock_actual - ? WHERE producto_id = ? AND sede = ?`,
+                    [cantidad, productoId, sede],
+                    (err) => {
+                        if (err) console.error('Error al actualizar stock:', err);
+                    }
+                );
+
+                res.json({ success: true });
+            }
+        );
+    });
+});
+app.post('/api/stock', (req, res) => {
+    const { productoId, sede, cantidad, descripcion } = req.body;
+
+    if (!productoId || !sede || !cantidad) {
+        return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    }
+
+    db.run(
+        `INSERT OR REPLACE INTO stock_sede (producto_id, sede, stock_actual)
+         VALUES (?, ?, COALESCE((SELECT stock_actual FROM stock_sede WHERE producto_id = ? AND sede = ?), 0) + ?)`,
+        [productoId, sede, productoId, sede, cantidad],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+
+            // Registrar movimiento (opcional, pero recomendado)
+            db.run(
+                `INSERT INTO movimientos_stock (producto_id, sede, tipo, cantidad, momento, descripcion)
+                 VALUES (?, ?, ?, ?, 'otro', ?)`,
+                [productoId, sede, cantidad > 0 ? 'entrada' : 'salida', Math.abs(cantidad), descripcion || 'Ajuste manual']
+            );
+
+            res.json({ success: true });
+        }
+    );
+});
+app.get('/api/stock', (req, res) => {
+    const sede = req.query.sede;
+
+    let sql = `
+        SELECT p.id AS producto_id, p.nombre, p.unidad, p.stock_minimo, p.proveedor,
+               COALESCE(s.stock_actual, 0) AS stock_actual
+        FROM productos p
+        LEFT JOIN stock_sede s ON p.id = s.producto_id
+    `;
+    let params = [];
+
+    if (sede) {
+        sql += ` AND s.sede = ?`;
+        params.push(sede);
+    }
+
+    sql += ` ORDER BY p.nombre`;
+
+    db.all(sql, params, (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
 // Ruta principal
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+// Endpoint para obtener stock (filtrado por sede opcional)
+app.get('/api/stock', (req, res) => {
+    const sede = req.query.sede;
+
+    let sql = `
+        SELECT p.id AS producto_id, p.nombre, p.unidad, p.stock_minimo, p.proveedor,
+               COALESCE(s.stock_actual, 0) AS stock_actual,
+               s.sede
+        FROM productos p
+        LEFT JOIN stock_sede s ON p.id = s.producto_id
+    `;
+    let params = [];
+
+    if (sede) {
+        sql += ` WHERE s.sede = ? OR s.sede IS NULL`;
+        params.push(sede);
+    }
+
+    sql += ` GROUP BY p.id, s.sede ORDER BY p.nombre, s.sede`;
+
+    db.all(sql, params, (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        // Si hay sede seleccionada, solo mostramos productos de esa sede (o todos si no hay stock)
+        if (sede) {
+            const productos = {};
+            rows.forEach(row => {
+                if (!productos[row.producto_id]) {
+                    productos[row.producto_id] = {
+                        producto_id: row.producto_id,
+                        nombre: row.nombre,
+                        unidad: row.unidad,
+                        stock_minimo: row.stock_minimo,
+                        proveedor: row.proveedor || '-',
+                        stock_actual: row.stock_actual,
+                        sede: row.sede || 'No asignado'
+                    };
+                }
+            });
+            res.json(Object.values(productos));
+        } else {
+            // Todas las sedes: mostramos por producto, sumando stock si hay múltiples sedes
+            const productos = {};
+            rows.forEach(row => {
+                if (!productos[row.producto_id]) {
+                    productos[row.producto_id] = {
+                        producto_id: row.producto_id,
+                        nombre: row.nombre,
+                        unidad: row.unidad,
+                        stock_minimo: row.stock_minimo,
+                        proveedor: row.proveedor || '-',
+                        stock_actual: 0
+                    };
+                }
+                productos[row.producto_id].stock_actual += row.stock_actual;
+            });
+            res.json(Object.values(productos));
+        }
+    });
+});
+// Endpoint para obtener todos los productos (catálogo único)
+// Soporta ?sede=Olea para filtrar por stock de esa sede
+app.get('/api/productos', (req, res) => {
+    const sede = req.query.sede;  // opcional
+
+    let sql = `
+        SELECT p.id, p.nombre, p.unidad, p.stock_minimo, p.proveedor,
+               COALESCE(s.stock_actual, 0) AS stock_actual
+        FROM productos p
+        LEFT JOIN stock_sede s ON p.id = s.producto_id
+    `;
+    let params = [];
+
+    if (sede) {
+        sql += ` AND s.sede = ?`;
+        params.push(sede);
+    }
+
+    sql += ` ORDER BY p.nombre`;
+
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            console.error('Error al obtener productos:', err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
+app.get('/api/reporte-consumo', (req, res) => {
+    const { mesAno, sede } = req.query;
+
+    if (!mesAno) {
+        return res.status(400).json({ error: 'mesAno es requerido (YYYY-MM)' });
+    }
+
+    const [año, mes] = mesAno.split('-').map(Number);
+
+    let sql = `
+        SELECT p.nombre,
+               SUM(CASE WHEN m.momento = 'desayuno' THEN m.cantidad ELSE 0 END) AS desayuno,
+               SUM(CASE WHEN m.momento = 'almuerzo' THEN m.cantidad ELSE 0 END) AS almuerzo,
+               SUM(CASE WHEN m.momento = 'once' THEN m.cantidad ELSE 0 END) AS once,
+               SUM(CASE WHEN m.momento = 'otro' THEN m.cantidad ELSE 0 END) AS otro,
+               SUM(m.cantidad) AS total
+        FROM movimientos_stock m
+        JOIN productos p ON m.producto_id = p.id
+        WHERE m.tipo = 'salida'
+          AND strftime('%Y', m.fecha) = ?
+          AND strftime('%m', m.fecha) = ?
+    `;
+    let params = [año.toString(), mes.toString().padStart(2, '0')];
+
+    if (sede) {
+        sql += ` AND m.sede = ?`;
+        params.push(sede);
+    }
+
+    sql += ` GROUP BY p.id, p.nombre ORDER BY p.nombre`;
+
+    db.all(sql, params, (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+// Obtener un producto por ID (para editar)
+app.get('/api/productos/:id', (req, res) => {
+    const id = req.params.id;
+    db.get(`SELECT * FROM productos WHERE id = ?`, [id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: 'Producto no encontrado' });
+        res.json(row);
+    });
+});
+
+// Actualizar producto
+app.put('/api/productos/:id', (req, res) => {
+    const id = req.params.id;
+    const { nombre, unidad, minimo, proveedor } = req.body;
+
+    if (!nombre || !unidad) {
+        return res.status(400).json({ error: 'Nombre y unidad son obligatorios' });
+    }
+
+    db.run(
+        `UPDATE productos SET nombre = ?, unidad = ?, stock_minimo = ?, proveedor = ? WHERE id = ?`,
+        [nombre, unidad, minimo || 0, proveedor || null, id],
+        function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            if (this.changes === 0) return res.status(404).json({ error: 'Producto no encontrado' });
+            res.json({ success: true });
+        }
+    );
 });
 
 // === ELIMINACIÓN MASIVA ===
@@ -1019,7 +1333,14 @@ app.delete('/api/eliminar-todo', (req, res) => {
         res.status(500).json({ error: 'Error interno al eliminar' });
     }
 });
-
+app.delete('/api/productos/:id', (req, res) => {
+    const id = req.params.id;
+    db.run(`DELETE FROM productos WHERE id = ?`, [id], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(404).json({ error: 'Producto no encontrado' });
+        res.json({ success: true });
+    });
+});
 app.listen(port, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
     console.log('Usuario login por defecto: admin / evolucion2025');

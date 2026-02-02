@@ -377,21 +377,182 @@
                     <h3>Stock de Mercadería</h3>
                 </div>
 
-                <div class="container" style="text-align:center; padding:80px 20px;">
-                    <p style="font-size:1.6rem; color:#555; margin-bottom:30px;">
-                        📦 Módulo de Stock Mercadería
-                    </p>
-                    <p style="font-size:1.3rem; color:#888; line-height:1.8;">
-                        Sección en desarrollo<br><br>
-                        Aquí podrás gestionar:<br>
-                        • Lista de productos y stock actual<br>
-                        • Entradas y salidas de mercadería<br>
-                        • Alertas de bajo stock<br>
-                        • Registro de proveedores<br>
-                        • Reportes de consumo mensual
-                    </p>
+                <div class="container">
+    <div class="card-header" style="background:#5DADE2; color:white; padding:20px; border-radius:12px 12px 0 0; text-align:center;">
+        <h3 style="margin:0;">Stock de Mercadería</h3>
+    </div>
+
+    <div class="card-body" style="padding:30px; background:white; border:2px solid #5DADE2; border-top:none; border-radius:0 0 12px 12px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:20px;">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <label style="font-weight:bold; font-size:1.2rem; color:#2c3e50; white-space:nowrap;">Stock por Sede:</label>
+                <select id="select-sede-stock" style="padding:12px 16px; border-radius:10px; border:2px solid #5DADE2; font-size:1.1rem; min-width:220px; background:#f8fbff;">
+                    <option value="">Todas las sedes</option>
+                    <option value="Olea">Olea</option>
+                    <option value="Naltahua">Naltahua</option>
+                    <option value="Femenino uno">Femenino uno</option>
+                    <option value="Femenino dos">Femenino dos</option>
+                    <option value="Polpaico">Polpaico</option>
+                    <option value="Buin">Buin</option>
+                </select>
+            </div>
+
+            <button id="btn-agregar-producto" class="btn-primary" style="padding:12px 30px; font-size:1.1rem; border-radius:30px; box-shadow:0 4px 12px rgba(93,173,226,0.3);">
+                + Agregar Producto
+            </button>
+        </div>
+
+        <table class="tabla-stock" style="width:100%; border-collapse:collapse; margin-top:20px;">
+            <thead>
+                <tr style="background:#5DADE2; color:white;">
+                    <th style="padding:14px;">Producto</th>
+                    <th style="padding:14px;">Unidad</th>
+                    <th style="padding:14px;">Stock Actual</th>
+                    <th style="padding:14px;">Mínimo</th>
+                    <th style="padding:14px;">Proveedor</th>
+                    <th style="padding:14px;">Estado</th>
+                    <th style="padding:14px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tbody-stock">
+                <!-- Filas generadas con JS -->
+            </tbody>
+        </table>
+
+                    <!-- Formulario agregar producto -->
+                    <div id="form-producto" style="display:none; margin-top:40px; padding:30px; background:#f8fbff; border-radius:12px; border:2px solid #5DADE2;">
+                        <h4 id="titulo-form-producto">Agregar Producto</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nombre *</label>
+                                <input type="text" id="producto-nombre" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Unidad (kg, unid, litros...) *</label>
+                                <input type="text" id="producto-unidad" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Stock Mínimo (alerta) *</label>
+                                <input type="number" id="producto-minimo" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Proveedor (opcional)</label>
+                                <input type="text" id="producto-proveedor">
+                            </div>
+                            <div class="form-group">
+                                <label>Sede para stock inicial</label>
+                                <select id="producto-sede-inicial">
+                                    <option value="">No asignar stock inicial</option>
+                                    <option value="Olea">Olea</option>
+                                    <option value="Naltahua">Naltahua</option>
+                                    <option value="Femenino uno">Femenino uno</option>
+                                    <option value="Femenino dos">Femenino dos</option>
+                                    <option value="Polpaico">Polpaico</option>
+                                    <option value="Buin">Buin</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Stock Inicial en esa sede</label>
+                                <input type="number" id="producto-stock-inicial" min="0">
+                            </div>
+                        </div>
+                        <div style="margin-top:30px; text-align:center;">
+                            <button id="btn-guardar-producto" class="btn-primary">Guardar</button>
+                            <button id="btn-cancelar-producto" class="btn-accion btn-cancelar">Cancelar</button>
+                        </div>
+                    </div>
+
+                    <!-- Botón para registrar salida (por ahora simple, lo mejoramos después) -->
+                    <div style="margin-top:40px; text-align:center;">
+                        <button id="btn-registrar-salida" class="btn-primary btn-accion grande">Registrar Salida</button>
+                    </div>
+                    <!-- Formulario para registrar salida -->
+                    <div id="form-salida" style="display:none; margin-top:40px; padding:30px; background:#fff8e1; border-radius:12px; border:2px solid #FFB300;">
+                        <h4>Registrar Salida de Producto</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Producto *</label>
+                                <select id="salida-producto" required>
+                                    <option value="">Seleccionar producto</option>
+                                    <!-- Se llenará con JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Cantidad *</label>
+                                <input type="number" id="salida-cantidad" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Momento del día *</label>
+                                <select id="salida-momento" required>
+                                    <option value="">Seleccionar</option>
+                                    <option value="desayuno">Desayuno</option>
+                                    <option value="almuerzo">Almuerzo</option>
+                                    <option value="once">Once</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción (opcional)</label>
+                                <input type="text" id="salida-descripcion">
+                            </div>
+                        </div>
+                        <div style="margin-top:30px; text-align:center;">
+                            <button id="btn-guardar-salida" class="btn-primary">Registrar Salida</button>
+                            <button id="btn-cancelar-salida" class="btn-accion btn-cancelar">Cancelar</button>
+                        </div>
+                    </div>
                 </div>
-            </section>
+                <!-- Botón y sección para reporte mensual -->
+                <div style="margin-top:50px; text-align:center;">
+                    <button id="btn-reporte-mensual" class="btn-primary grande">Ver Reporte Mensual de Consumo</button>
+                </div>
+
+                <!-- Reporte mensual (oculto al inicio) -->
+                <div id="reporte-mensual" style="display:none; margin-top:40px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                        <h4>Reporte Mensual de Consumo</h4>
+                        <button id="btn-cerrar-reporte" class="btn-secondary">Cerrar Reporte</button>
+                    </div>
+
+                    <div class="form-grid" style="margin-bottom:30px;">
+                        <div class="form-group">
+                            <label>Mes y Año *</label>
+                            <input type="month" id="reporte-mes" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Sede</label>
+                            <select id="reporte-sede">
+                                <option value="">Todas las sedes</option>
+                                <option value="Olea">Olea</option>
+                                <option value="Naltahua">Naltahua</option>
+                                <option value="Femenino uno">Femenino uno</option>
+                                <option value="Femenino dos">Femenino dos</option>
+                                <option value="Polpaico">Polpaico</option>
+                                <option value="Buin">Buin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button id="btn-generar-reporte" class="btn-primary">Generar Reporte</button>
+                        </div>
+                    </div>
+
+                    <table class="tabla-reporte">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Desayuno</th>
+                                <th>Almuerzo</th>
+                                <th>Once</th>
+                                <th>Otro</th>
+                                <th>Total Consumido</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-reporte">
+                            <!-- Filas generadas con JS -->
+                        </tbody>
+                    </table>
+                </div>
+				</section>
             <!-- MODIFICAR PACIENTE -->
             <section id="seccion-modificar" class="seccion-oculta">
                 <button class="btn-volver">← Menú Principal</button>

@@ -2342,5 +2342,368 @@ document.addEventListener('click', (e) => {
         window.open(url, '_blank');
     }
 });
+// Abrir formulario agregar producto
+document.getElementById('btn-agregar-producto')?.addEventListener('click', () => {
+    document.getElementById('form-producto').style.display = 'block';
+    document.getElementById('titulo-form-producto').textContent = 'Agregar Producto';
+    document.getElementById('producto-nombre').value = '';
+    document.getElementById('producto-unidad').value = '';
+    document.getElementById('producto-minimo').value = '';
+    document.getElementById('producto-proveedor').value = '';
+});
+
+// Cancelar formulario
+document.getElementById('btn-cancelar-producto')?.addEventListener('click', () => {
+    document.getElementById('form-producto').style.display = 'none';
+});
+
+// Cargar stock al entrar a la sección y al cambiar sede
+async function cargarStock() {
+    const sede = document.getElementById('select-sede-stock').value;
+    const tbody = document.getElementById('tbody-stock');
+
+    // Limpiar tabla antes de cargar (evita duplicados)
+    tbody.innerHTML = '<tr><td colspan="7">Cargando productos...</td></tr>';
+
+    try {
+        const res = await fetch(`/api/stock?sede=${sede || ''}`);
+        if (!res.ok) throw new Error('Error en la respuesta del servidor');
+
+        const data = await res.json();
+
+        // Limpiar de nuevo por seguridad
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7">No hay productos registrados</td></tr>';
+            return;
+        }
+
+        data.forEach(item => {
+            let estadoClass = '';
+            let estadoText = 'OK';
+            if (item.stock_actual < item.stock_minimo) {
+                estadoClass = 'estado-bajo';
+                estadoText = `¡Bajo! (falta ${item.stock_minimo - item.stock_actual})`;
+            } else if (item.stock_actual <= item.stock_minimo * 1.5) {
+                estadoClass = 'estado-advertencia';
+                estadoText = `Cerca (${item.stock_minimo - item.stock_actual + 1} hasta mínimo)`;
+            }
+
+            const row = `
+                <tr>
+                    <td>${item.nombre}</td>
+                    <td>${item.unidad}</td>
+                    <td>${item.stock_actual}</td>
+                    <td>${item.stock_minimo}</td>
+                    <td>${item.proveedor || '-'}</td>
+                    <td class="${estadoClass}">${estadoText}</td>
+                    <td>
+                        <button class="btn-editar-producto btn-accion" data-id="${item.producto_id}">Editar</button>
+                        <button class="btn-eliminar-producto btn-accion" data-id="${item.producto_id}" data-nombre="${item.nombre}">Eliminar</button>
+                        <button class="btn-agregar-stock btn-accion" data-id="${item.producto_id}" data-nombre="${item.nombre}" data-sede="${sede || 'todas'}">
+                            ${item.stock_actual > 0 ? 'Editar Stock' : 'Agregar Stock'}
+                        </button>
+                        <button class="btn-registrar-salida-producto btn-accion" data-id="${item.producto_id}" data-nombre="${item.nombre}">Salida</button>
+                    </td>
+                </tr>`;
+            tbody.innerHTML += row;
+        });
+    } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="7">Error al cargar stock</td></tr>';
+        console.error('Error al cargar stock:', err);
+    }
+}
+
+// Cargar al entrar y al cambiar sede
+document.querySelector('[data-seccion="stock-mercaderia"]').addEventListener('click', cargarStock);
+document.getElementById('select-sede-stock')?.addEventListener('change', cargarStock);
+// Abrir formulario de salida
+document.getElementById('btn-registrar-salida')?.addEventListener('click', async () => {
+    const sede = document.getElementById('select-sede-stock').value;
+    if (!sede) {
+        alert('Selecciona una sede primero');
+        return;
+    }
+
+    // Cargar productos en el select
+    const selectProducto = document.getElementById('salida-producto');
+    selectProducto.innerHTML = '<option value="">Seleccionar producto</option>';
+
+    try {
+        const res = await fetch(`/api/productos?sede=${sede}`);
+        const productos = await res.json();
+
+        productos.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = `${p.nombre} (stock: ${p.stock_actual})`;
+            selectProducto.appendChild(opt);
+        });
+
+        document.getElementById('form-salida').style.display = 'block';
+    } catch (err) {
+        alert('Error al cargar productos');
+        console.error(err);
+    }
+});
+
+// Cancelar salida
+document.getElementById('btn-cancelar-salida')?.addEventListener('click', () => {
+    document.getElementById('form-salida').style.display = 'none';
+});
+
+// Guardar salida
+document.getElementById('btn-guardar-salida')?.addEventListener('click', async () => {
+    const productoId = document.getElementById('salida-producto').value;
+    const cantidad = parseInt(document.getElementById('salida-cantidad').value);
+    const momento = document.getElementById('salida-momento').value;
+    const descripcion = document.getElementById('salida-descripcion').value.trim();
+    const sede = document.getElementById('select-sede-stock').value;
+
+    if (!productoId || !cantidad || cantidad <= 0 || !momento || !sede) {
+        alert('Producto, cantidad, momento y sede son obligatorios');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/salidas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productoId, sede, cantidad, momento, descripcion })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert('Salida registrada correctamente');
+            document.getElementById('form-salida').style.display = 'none';
+            cargarStock(); // recargar tabla
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (err) {
+        alert('Error al registrar salida');
+        console.error(err);
+    }
+});
+// Registrar salida desde botón por producto
+document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('btn-registrar-salida-producto')) {
+        const productoId = e.target.dataset.id;
+        const nombre = e.target.dataset.nombre;
+        const sede = document.getElementById('select-sede-stock').value;
+
+        if (!sede) {
+            alert('Selecciona una sede primero');
+            return;
+        }
+
+        // Preseleccionar producto y sede
+        document.getElementById('salida-producto').value = productoId;
+        document.getElementById('form-salida').style.display = 'block';
+    }
+});
+// Abrir reporte mensual
+document.getElementById('btn-reporte-mensual')?.addEventListener('click', () => {
+    document.getElementById('reporte-mensual').style.display = 'block';
+});
+
+// Cerrar reporte
+document.getElementById('btn-cerrar-reporte')?.addEventListener('click', () => {
+    document.getElementById('reporte-mensual').style.display = 'none';
+});
+
+// Generar reporte
+document.getElementById('btn-generar-reporte')?.addEventListener('click', async () => {
+    const mesAno = document.getElementById('reporte-mes').value; // formato YYYY-MM
+    const sede = document.getElementById('reporte-sede').value;
+
+    if (!mesAno) {
+        alert('Selecciona mes y año');
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/reporte-consumo?mesAno=${mesAno}&sede=${sede || ''}`);
+        const data = await res.json();
+
+        const tbody = document.getElementById('tbody-reporte');
+        tbody.innerHTML = '';
+
+        data.forEach(item => {
+            const row = `
+                <tr>
+                    <td>${item.nombre}</td>
+                    <td>${item.desayuno || 0}</td>
+                    <td>${item.almuerzo || 0}</td>
+                    <td>${item.once || 0}</td>
+                    <td>${item.otro || 0}</td>
+                    <td><strong>${item.total || 0}</strong></td>
+                </tr>`;
+            tbody.innerHTML += row;
+        });
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6">No hay consumos en este período</td></tr>';
+        }
+    } catch (err) {
+        alert('Error al generar reporte');
+        console.error(err);
+    }
+});
+// Editar producto
+document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('btn-editar-producto')) {
+        const productoId = e.target.dataset.id;
+
+        try {
+            const res = await fetch(`/api/productos/${productoId}`);
+            const producto = await res.json();
+
+            if (!res.ok) throw new Error(producto.error || 'Error al obtener producto');
+
+            // Llenar formulario con datos actuales
+            document.getElementById('producto-nombre').value = producto.nombre;
+            document.getElementById('producto-unidad').value = producto.unidad;
+            document.getElementById('producto-minimo').value = producto.stock_minimo;
+            document.getElementById('producto-proveedor').value = producto.proveedor || '';
+            document.getElementById('producto-sede-inicial').style.display = 'none'; // no permite cambiar sede al editar
+            document.getElementById('producto-stock-inicial').style.display = 'none';
+            document.getElementById('titulo-form-producto').textContent = 'Editar Producto';
+
+            // Guardar ID para saber que es edición
+            document.getElementById('producto-nombre').dataset.id = productoId;
+
+            document.getElementById('form-producto').style.display = 'block';
+        } catch (err) {
+            alert('Error al cargar datos del producto');
+            console.error(err);
+        }
+    }
+});
+
+// Guardar (agregar o editar)
+document.getElementById('btn-guardar-producto')?.addEventListener('click', async () => {
+    const nombre = document.getElementById('producto-nombre').value.trim();
+    const unidad = document.getElementById('producto-unidad').value.trim();
+    const minimo = parseInt(document.getElementById('producto-minimo').value) || 0;
+    const proveedor = document.getElementById('producto-proveedor').value.trim();
+    const productoId = document.getElementById('producto-nombre').dataset.id; // si existe → edición
+
+    if (!nombre || !unidad) {
+        alert('Nombre y Unidad son obligatorios');
+        return;
+    }
+
+    const method = productoId ? 'PUT' : 'POST';
+    const url = productoId ? `/api/productos/${productoId}` : '/api/productos';
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, unidad, minimo, proveedor })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert(productoId ? 'Producto actualizado' : 'Producto agregado');
+            document.getElementById('form-producto').style.display = 'none';
+            document.getElementById('producto-nombre').dataset.id = ''; // limpiar ID
+            cargarStock(); // recargar tabla
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (err) {
+        alert('Error al guardar');
+        console.error(err);
+    }
+});
+// Eliminar producto
+document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('btn-eliminar-producto')) {
+        const id = e.target.dataset.id;
+        const nombre = e.target.dataset.nombre;
+
+        if (!confirm(`¿Seguro que quieres eliminar el producto "${nombre}"?\nEsto no se puede deshacer.`)) return;
+
+        try {
+            const res = await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+
+            if (res.ok) {
+                alert('Producto eliminado');
+                cargarStock();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (err) {
+            alert('Error al eliminar');
+            console.error(err);
+        }
+    }
+});
+// Abrir formulario para agregar/editar stock por sede
+document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('btn-agregar-stock')) {
+        const productoId = e.target.dataset.id;
+        const nombre = e.target.dataset.nombre;
+        const sedeActual = document.getElementById('select-sede-stock').value;
+
+        if (!sedeActual || sedeActual === 'todas') {
+            alert('Selecciona una sede específica para agregar/editar stock');
+            return;
+        }
+
+        try {
+            // Obtener stock actual de esa sede
+            const res = await fetch(`/api/stock?sede=${sedeActual}`);
+            const data = await res.json();
+            const producto = data.find(p => p.producto_id == productoId);
+
+            let stockActual = 0;
+            if (producto) stockActual = producto.stock_actual;
+
+            // Preguntar cantidad a agregar
+            const cantidad = prompt(`Stock actual en ${sedeActual}: ${stockActual}\n\n¿Cuánto stock quieres agregar? (positivo para sumar, negativo para restar)`);
+
+            if (cantidad === null || isNaN(cantidad)) return;
+
+            const cantidadNum = parseInt(cantidad);
+
+            if (cantidadNum === 0) return;
+
+            const confirmar = confirm(`¿Confirmas ${cantidadNum > 0 ? 'agregar' : 'restar'} ${Math.abs(cantidadNum)} unidades de "${nombre}" en ${sedeActual}?`);
+
+            if (!confirmar) return;
+
+            // Enviar al servidor
+            const resUpdate = await fetch('/api/stock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    productoId,
+                    sede: sedeActual,
+                    cantidad: cantidadNum,
+                    descripcion: `Ajuste manual desde interfaz`
+                })
+            });
+
+            const dataUpdate = await resUpdate.json();
+
+            if (resUpdate.ok) {
+                alert('Stock actualizado correctamente');
+                cargarStock(); // recargar tabla
+            } else {
+                alert('Error: ' + dataUpdate.error);
+            }
+        } catch (err) {
+            alert('Error al actualizar stock');
+            console.error(err);
+        }
+    }
+});
     console.log('Script.js cargado - Sistema Evolución Chile listo 🚀');
 });

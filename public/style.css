@@ -1432,3 +1432,448 @@ fieldset.fieldset-profesional legend{
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(93, 173, 226, 0.4);
 }
+.tabla-stock {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.tabla-stock th, .tabla-stock td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.tabla-stock th {
+    background: #5DADE2;
+    color: white;
+}
+
+.estado-bajo {
+    color: red;
+    font-weight: bold;
+}
+
+.estado-advertencia {
+    color: orange;
+    font-weight: bold;
+}
+#form-salida {
+    background: #fff8e1;
+    border: 2px solid #FFB300;
+}
+
+#form-salida select, #form-salida input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+.tabla-reporte {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.tabla-reporte th, .tabla-reporte td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.tabla-reporte th {
+    background: #4CAF50;
+    color: white;
+}
+.btn-editar-producto {
+    background: #2196F3; /* Azul para editar */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    margin: 0 4px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-editar-producto:hover {
+    background: #1976D2;
+}
+
+.btn-eliminar-producto {
+    background: #f44336; /* Rojo para eliminar */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    margin: 0 4px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-eliminar-producto:hover {
+    background: #d32f2f;
+}
+.btn-agregar-stock {
+    background: #4CAF50; /* Verde para stock */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    margin: 0 4px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-agregar-stock:hover {
+    background: #388E3C;
+}
+/* Botones de acciones en la tabla de stock - ESTILO UNIFICADO */
+.tabla-stock .btn-accion {
+    padding: 8px 16px;
+    margin: 0 4px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.tabla-stock .btn-accion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Colores específicos */
+.btn-editar-producto {
+    background: #3498db;  /* Azul claro */
+    color: white;
+}
+
+.btn-editar-producto:hover {
+    background: #2980b9;
+}
+
+.btn-eliminar-producto {
+    background: #e74c3c;  /* Rojo */
+    color: white;
+}
+
+.btn-eliminar-producto:hover {
+    background: #c0392b;
+}
+
+.btn-agregar-stock {
+    background: #27ae60;  /* Verde */
+    color: white;
+}
+
+.btn-agregar-stock:hover {
+    background: #219653;
+}
+
+.btn-registrar-salida-producto,
+.btn-registrar-salida {
+    background: #f39c12;  /* Naranja */
+    color: white;
+}
+
+.btn-registrar-salida-producto:hover,
+.btn-registrar-salida:hover {
+    background: #e67e22;
+}
+
+/* Botón general + Agregar Producto (para que coincida) */
+#btn-agregar-producto {
+    background: #3498db;
+    color: white;
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    transition: all 0.3s;
+}
+
+#btn-agregar-producto:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(52, 152, 219, 0.4);
+}
+/* Botones de acciones en la tabla de stock - ESTILO UNIFICADO */
+.tabla-stock .btn-accion {
+    padding: 8px 14px;
+    margin: 0 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    min-width: 80px; /* mismo ancho mínimo para que no se vean desiguales */
+    text-align: center;
+}
+
+.tabla-stock .btn-accion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Colores diferenciados */
+.btn-editar {
+    background: #3498db; /* Azul */
+    color: white;
+}
+
+.btn-editar:hover {
+    background: #2980b9;
+}
+
+.btn-eliminar {
+    background: #e74c3c; /* Rojo */
+    color: white;
+}
+
+.btn-eliminar:hover {
+    background: #c0392b;
+}
+
+.btn-stock {
+    background: #27ae60; /* Verde */
+    color: white;
+}
+
+.btn-stock:hover {
+    background: #219653;
+}
+
+.btn-salida {
+    background: #f39c12; /* Naranja */
+    color: white;
+}
+
+.btn-salida:hover {
+    background: #e67e22;
+}
+/* Estilo unificado para TODOS los botones de acciones en la tabla de stock */
+.tabla-stock button {
+    padding: 8px 16px !important;      /* mismo padding en todos */
+    margin: 0 4px !important;          /* mismo espacio entre botones */
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    border: none !important;
+    border-radius: 8px !important;     /* bordes redondeados iguales */
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important; /* sombra suave */
+    min-width: 90px !important;        /* ancho mínimo para que no queden desiguales */
+    text-align: center !important;
+    white-space: nowrap !important;    /* evita que el texto se baje de línea */
+}
+
+.tabla-stock button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+}
+
+/* Colores específicos (mantienen los que ya tenías) */
+.btn-editar-producto {
+    background: #3498db !important;   /* Azul */
+    color: white !important;
+}
+
+.btn-eliminar-producto {
+    background: #e74c3c !important;   /* Rojo */
+    color: white !important;
+}
+
+.btn-agregar-stock {
+    background: #27ae60 !important;   /* Verde */
+    color: white !important;
+}
+
+.btn-registrar-salida-producto {
+    background: #f39c12 !important;   /* Naranja */
+    color: white !important;
+}
+
+/* Botón general + Agregar Producto (para que coincida visualmente) */
+#btn-agregar-producto,
+#btn-registrar-salida {
+    padding: 12px 24px !important;
+    font-size: 1.1rem !important;
+    border-radius: 30px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+}
+/* ===================================== */
+/* BOTONES DE ACCIONES UNIFICADOS - TABLA STOCK */
+/* ===================================== */
+
+.tabla-stock td:last-child {  /* columna Acciones */
+    white-space: nowrap;      /* evita que se bajen de línea */
+    padding: 12px 8px !important;
+    text-align: center;
+}
+
+.tabla-stock .btn-accion {
+    display: inline-block;    /* todos en línea */
+    padding: 8px 14px;        /* mismo padding */
+    margin: 0 3px;            /* mismo espacio entre botones */
+    font-size: 0.9rem;        /* tamaño de fuente igual */
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;          /* ancho mínimo igual para todos */
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.tabla-stock .btn-accion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+/* Colores específicos (mantienen los que ya tenías) */
+.btn-editar-producto {
+    background: #3498db !important;   /* Azul */
+    color: white !important;
+}
+
+.btn-eliminar-producto {
+    background: #e74c3c !important;   /* Rojo */
+    color: white !important;
+}
+
+.btn-agregar-stock {
+    background: #27ae60 !important;   /* Verde */
+    color: white !important;
+}
+
+.btn-registrar-salida-producto {
+    background: #f39c12 !important;   /* Naranja */
+    color: white !important;
+}
+
+/* Botón general "Registrar Salida" (el de arriba) - para que coincida visualmente */
+#btn-registrar-salida {
+    padding: 12px 28px !important;
+    font-size: 1.05rem !important;
+    border-radius: 30px !important;
+    background: #f39c12 !important;   /* mismo naranja */
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3) !important;
+    transition: all 0.3s ease !important;
+    min-width: 140px !important;
+}
+
+#btn-registrar-salida:hover {
+    background: #e67e22 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4) !important;
+}
+
+/* Botón + Agregar Producto - para que coincida visualmente */
+#btn-agregar-producto {
+    padding: 12px 28px !important;
+    font-size: 1.05rem !important;
+    border-radius: 30px !important;
+    background: #3498db !important;   /* azul como Editar */
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3) !important;
+    transition: all 0.3s ease !important;
+    min-width: 180px !important;
+}
+
+#btn-agregar-producto:hover {
+    background: #2980b9 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4) !important;
+}
+/* ===================================== */
+/* BOTONES DE ACCIONES UNIFICADOS - TODA LA TABLA STOCK */
+/* ===================================== */
+
+.tabla-stock td:last-child,
+.form-producto .btn-accion,
+.form-salida .btn-accion {
+    white-space: nowrap !important;
+    text-align: center;
+}
+
+.btn-accion {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 0 4px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;                /* mismo ancho mínimo */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.btn-accion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Colores específicos */
+.btn-editar-producto {
+    background: #3498db;            /* Azul */
+    color: white;
+}
+
+.btn-eliminar-producto {
+    background: #e74c3c;            /* Rojo */
+    color: white;
+}
+
+.btn-agregar-stock {
+    background: #27ae60;            /* Verde */
+    color: white;
+}
+
+.btn-salida,
+.btn-registrar-salida-producto {
+    background: #f39c12;            /* Naranja */
+    color: white;
+}
+
+/* Botón Cancelar - gris oscuro para diferenciar */
+.btn-cancelar {
+    background: #7f8c8d;            /* Gris oscuro */
+    color: white;
+}
+
+.btn-cancelar:hover {
+    background: #636e72;
+}
+
+/* Botón principal + Agregar Producto (coherencia) */
+#btn-agregar-producto,
+#btn-registrar-salida {
+    padding: 12px 28px;
+    font-size: 1.05rem;
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    min-width: 160px;
+}
+
+#btn-agregar-producto {
+    background: #3498db;
+}
+
+#btn-agregar-producto:hover {
+    background: #2980b9;
+}
+
+#btn-registrar-salida {
+    background: #f39c12;
+}
+
+#btn-registrar-salida:hover {
+    background: #e67e22;
+}
