@@ -4,11 +4,16 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
+const bodyParser = require('body-parser');  // ← Solo una vez aquí
 
 const app = express();
 // Servir archivos estáticos (HTML, CSS, JS, imágenes)
 app.use(express.static('public'));  // si tienes carpeta public
 app.use(express.static(__dirname));  // sirve todo desde la raíz (más simple para tu caso)
+
+// Middlewares de body-parser (¡orden correcto!)
+app.use(bodyParser.json()); // para JSON normal
+app.use(bodyParser.urlencoded({ extended: true })); // para form-data texto
 
 // Ruta raíz: sirve index.html directamente
 app.get('/', (req, res) => {
@@ -58,14 +63,6 @@ if (!fs.existsSync(documentosInstitucionPath)) {
 // Multer para comprobantes y facturas (memoryStorage para leer DB primero)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-
-// Multer específico para comprobantes
-const storageComprobantes = multer.memoryStorage();
-const uploadComprobantes = multer({ storage: storageComprobantes });
-
-// Multer para facturas
-const storageFacturas = multer.memoryStorage();
-const uploadFacturas = multer({ storage: storageFacturas });
 
 // Multer para carga masiva
 const uploadMasivo = multer({
@@ -621,53 +618,61 @@ app.get('/api/pagos-pendientes', (req, res) => {
     const mesActual = hoy.getMonth() + 1;
 
     db.all(`
-        SELECT p.id, p.nombre, p.documento_numero, p.sede, p.monto_mensual, p.fecha_vencimiento_pago,
-           p.telefono_apoderado,  -- ← AGREGAR ESTA LÍNEA
-           pag.año, pag.mes, pag.pagado, pag.valor_pagado
+        SELECT p.id, p.nombre, p.documento_numero, p.sede, p.monto_mensual, p.fecha_vencimiento_pago
         FROM pacientes p
-        LEFT JOIN pagos pag ON p.id = pag.paciente_id 
-            AND (pag.año < ? OR (pag.año = ? AND pag.mes <= ?))
         WHERE p.estado = 'Activo'
-        ORDER BY p.sede, p.nombre, pag.año, pag.mes
-    `, [añoActual, añoActual, mesActual], (err, rows) => {
+        ORDER BY p.sede, p.nombre
+    `, [], (err, pacientes) => {
         if (err) return res.status(500).json({ error: err.message });
 
         const pacientesPendientes = {};
-        let totalPendiente = 0;
 
-        rows.forEach(row => {
-            if (row.pagado === 1) return; // Si ya está pagado, no lo consideramos pendiente
-
-            if (!pacientesPendientes[row.id]) {
-                pacientesPendientes[row.id] = {
-                    id: row.id,
-                    nombre: row.nombre,
-                    documento_numero: row.documento_numero,
-                    sede: row.sede,
-                    monto_mensual: row.monto_mensual,
-                    meses_pendientes: [],
-                    pendiente_por_mes: [],  // ← NUEVO: pendiente real por mes
-                    telefono_apoderado: row.telefono_apoderado || '',  // ← AGREGAR ESTA LÍNEA
-                    pendiente_total: 0      // ← NUEVO: suma total pendiente
-                    
-                };
-            }
-
-            const mesStr = `${row.año}-${String(row.mes).padStart(2, '0')}`;
-            const pendienteMes = row.monto_mensual - (row.valor_pagado || 0);
-
-            if (pendienteMes > 0) {
-                pacientesPendientes[row.id].meses_pendientes.push(mesStr);
-                pacientesPendientes[row.id].pendiente_por_mes.push(pendienteMes); // pendiente real
-                pacientesPendientes[row.id].pendiente_total += pendienteMes;
-                totalPendiente += pendienteMes;
-            }
+        pacientes.forEach(p => {
+            pacientesPendientes[p.id] = {
+                id: p.id,
+                nombre: p.nombre,
+                documento_numero: p.documento_numero,
+                sede: p.sede,
+                monto_mensual: p.monto_mensual,
+                fecha_vencimiento_pago: p.fecha_vencimiento_pago || 5,
+                meses_pendientes: [],
+                pendiente_por_mes: [],
+                pendiente_total: 0
+            };
         });
 
-        res.json({
-            pacientes: Object.values(pacientesPendientes),
-            total_pendiente: totalPendiente
-        });
+        db.all(`
+            SELECT pag.paciente_id, pag.año, pag.mes, pag.pagado, pag.valor_pagado
+            FROM pagos pag
+            WHERE pag.año <= ? AND (pag.año < ? OR pag.mes <= ?)
+            ORDER BY pag.paciente_id, pag.año, pag.mes
+        `, [añoActual, añoActual, mesActual], (err, pagos) => {
+                if (err) return res.status(500).json({ error: err.message });
+
+                pagos.forEach(pag => {
+                    const pac = pacientesPendientes[pag.paciente_id];
+                    if (!pac) return;
+
+                    const mesStr = `${pag.año}-${String(pag.mes).padStart(2, '0')}`;
+
+                    // Pendiente real: si pagado = 1 → 0, sino monto - valor_pagado
+                    const pendienteMes = pag.pagado === 1 ? 0 : pac.monto_mensual - (pag.valor_pagado || 0);
+
+                    if (pendienteMes > 0) {
+                        pac.meses_pendientes.push(mesStr);
+                        pac.pendiente_por_mes.push(pendienteMes);
+                        pac.pendiente_total += pendienteMes;
+                    }
+                });
+
+                // Solo devolver pacientes con deuda total > 0
+                const morosos = Object.values(pacientesPendientes).filter(p => p.pendiente_total > 0);
+
+                res.json({
+                    pacientes: morosos,
+                    total_pendiente: morosos.reduce((sum, p) => sum + p.pendiente_total, 0)
+                });
+            });
     });
 });
 
@@ -948,82 +953,104 @@ app.put('/api/capacidades/:sede', (req, res) => {
     });
 });
 
-// Ruta para subir comprobantes
-app.post('/api/subir-comprobantes', uploadComprobantes.array('comprobantes'), (req, res) => {
-    const pacienteId = req.body.pacienteId;
+// MULTER PARA COMPROBANTES - Con año/mes y datos reales del paciente
+const storageComprobantes = multer.diskStorage({
+    destination: async (req, file, cb) => {
+        const { pacienteId, año, mes } = req.body;
 
-    if (!pacienteId) {
-        return res.status(400).json({ error: 'pacienteId requerido' });
-    }
+        console.log('req.body recibido en comprobantes:', req.body); // ← Para depurar
 
-    db.get('SELECT documento_numero, sede FROM pacientes WHERE id = ?', [pacienteId], (err, row) => {
-        if (err || !row || !row.documento_numero || !row.sede) {
-            console.error('Error buscando RUT/sede del paciente:', err);
-            return res.status(404).json({ error: 'RUT o sede no encontrado' });
+        if (!pacienteId || !año || !mes) {
+            return cb(new Error('Faltan pacienteId, año o mes'));
         }
 
-        const rut = limpiarRutParaCarpeta(row.documento_numero);
-        const pacienteFolder = getPacienteFolderPathBySedeYRut(row.sede, rut);
-        if (!pacienteFolder) {
-            return res.status(400).json({ error: 'RUT o sede inválido' });
-        }
+        db.get('SELECT sede, documento_numero FROM pacientes WHERE id = ?', [pacienteId], (err, row) => {
+            if (err || !row || !row.sede || !row.documento_numero) {
+                console.error('Error buscando paciente:', err);
+                return cb(new Error('Paciente no encontrado o sin sede/RUT'));
+            }
 
-        const uploadDir = path.join(pacienteFolder, 'comprobantes_de_pago');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
+            const sede = row.sede;
+            const rut = row.documento_numero.replace(/[\.\-]/g, ''); // limpiar puntos y guiones
+            const tipo = 'comprobantes_de_pago';
+            const yearMonth = `${año}/${mes.padStart(2, '0')}`;
 
-        const uploadedFiles = [];
+            const uploadPath = path.join(__dirname, 'public', 'documentos', sede, rut, tipo, yearMonth);
 
-        req.files.forEach(file => {
-            const filePath = path.join(uploadDir, file.originalname);
-            fs.writeFileSync(filePath, file.buffer);
-            uploadedFiles.push(file.originalname);
+            fs.mkdirSync(uploadPath, { recursive: true });
+
+            cb(null, uploadPath);
         });
-
-        console.log(`Comprobantes subidos para RUT ${rut} en sede ${row.sede}:`, uploadedFiles);
-
-        res.json({ success: true, files: uploadedFiles });
-    });
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        const nombreBase = `comprobante_${req.body.pacienteId}_${req.body.año}-${req.body.mes.padStart(2, '0')}`;
+        cb(null, `${nombreBase}${ext}`);
+    }
 });
 
-// Ruta para subir facturas
-app.post('/api/subir-facturas', uploadFacturas.array('facturas'), (req, res) => {
-    const pacienteId = req.body.pacienteId;
+const uploadComprobantes = multer({ storage: storageComprobantes });
 
-    if (!pacienteId) {
-        return res.status(400).json({ error: 'pacienteId requerido' });
+app.post('/api/subir-comprobantes', uploadComprobantes.array('comprobantes', 10), (req, res) => {
+    const files = req.files;
+    if (!files || files.length === 0) {
+        return res.status(400).json({ error: 'No se subieron archivos' });
     }
 
-    db.get('SELECT documento_numero, sede FROM pacientes WHERE id = ?', [pacienteId], (err, row) => {
-        if (err || !row || !row.documento_numero || !row.sede) {
-            console.error('Error buscando RUT/sede del paciente:', err);
-            return res.status(404).json({ error: 'RUT o sede no encontrado' });
+    const uploadedFiles = files.map(file => file.filename);
+    console.log(`Comprobantes subidos:`, uploadedFiles);
+
+    res.json({ success: true, files: uploadedFiles });
+});
+
+// MULTER PARA FACTURAS (mismo cambio)
+const storageFacturas = multer.diskStorage({
+    destination: async (req, file, cb) => {
+        const { pacienteId, año, mes } = req.body;
+
+        console.log('req.body recibido en facturas:', req.body); // ← Para depurar
+
+        if (!pacienteId || !año || !mes) {
+            return cb(new Error('Faltan pacienteId, año o mes'));
         }
 
-        const rut = limpiarRutParaCarpeta(row.documento_numero);
-        const pacienteFolder = getPacienteFolderPathBySedeYRut(row.sede, rut);
-        if (!pacienteFolder) {
-            return res.status(400).json({ error: 'RUT o sede inválido' });
-        }
+        db.get('SELECT sede, documento_numero FROM pacientes WHERE id = ?', [pacienteId], (err, row) => {
+            if (err || !row || !row.sede || !row.documento_numero) {
+                console.error('Error buscando paciente:', err);
+                return cb(new Error('Paciente no encontrado o sin sede/RUT'));
+            }
 
-        const uploadDir = path.join(pacienteFolder, 'facturas');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
+            const sede = row.sede;
+            const rut = row.documento_numero.replace(/[\.\-]/g, '');
+            const tipo = 'facturas';
+            const yearMonth = `${año}/${mes.padStart(2, '0')}`;
 
-        const uploadedFiles = [];
+            const uploadPath = path.join(__dirname, 'public', 'documentos', sede, rut, tipo, yearMonth);
 
-        req.files.forEach(file => {
-            const filePath = path.join(uploadDir, file.originalname);
-            fs.writeFileSync(filePath, file.buffer);
-            uploadedFiles.push(file.originalname);
+            fs.mkdirSync(uploadPath, { recursive: true });
+
+            cb(null, uploadPath);
         });
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        const nombreBase = `factura_${req.body.pacienteId}_${req.body.año}-${req.body.mes.padStart(2, '0')}`;
+        cb(null, `${nombreBase}${ext}`);
+    }
+});
 
-        console.log(`Facturas subidas para RUT ${rut} en sede ${row.sede}:`, uploadedFiles);
+const uploadFacturas = multer({ storage: storageFacturas });
 
-        res.json({ success: true, files: uploadedFiles });
-    });
+app.post('/api/subir-facturas', uploadFacturas.array('facturas', 10), (req, res) => {
+    const files = req.files;
+    if (!files || files.length === 0) {
+        return res.status(400).json({ error: 'No se subieron archivos' });
+    }
+
+    const uploadedFiles = files.map(file => file.filename);
+    console.log(`Facturas subidas:`, uploadedFiles);
+
+    res.json({ success: true, files: uploadedFiles });
 });
 app.post('/api/productos', (req, res) => {
     const { nombre, unidad, minimo, proveedor, sedeInicial, stockInicial } = req.body;
@@ -1291,6 +1318,87 @@ app.get('/api/productos/:id', (req, res) => {
     });
 });
 
+// Endpoint para listar documentos reales desde public/documentos/[sede]/[rut]/[tipo]/
+app.get('/api/documentos-financieros', (req, res) => {
+    const { sede, tipo, anio, mes, dia } = req.query;
+
+    const baseDir = path.join(__dirname, 'public', 'documentos');
+
+    try {
+        let documentos = [];
+
+        // Sedes (si no se filtra, leer todas las carpetas de sedes)
+        const sedes = sede ? [sede] : fs.readdirSync(baseDir).filter(item => {
+            return fs.statSync(path.join(baseDir, item)).isDirectory();
+        });
+
+        sedes.forEach(s => {
+            const sedeDir = path.join(baseDir, s);
+            if (!fs.existsSync(sedeDir)) return;
+
+            // Recorrer carpetas de RUT (ej: 15697031K)
+            const ruts = fs.readdirSync(sedeDir).filter(item => {
+                return fs.statSync(path.join(sedeDir, item)).isDirectory();
+            });
+
+            ruts.forEach(rut => {
+                const rutDir = path.join(sedeDir, rut);
+                const tipos = fs.readdirSync(rutDir).filter(item => {
+                    return fs.statSync(path.join(rutDir, item)).isDirectory();
+                });
+
+                tipos.forEach(tipoCarpeta => {
+                    // Filtrar por tipo si se especifica
+                    if (tipo && tipoCarpeta.toLowerCase() !== tipo.toLowerCase()) return;
+
+                    const tipoPath = path.join(rutDir, tipoCarpeta);
+
+                    fs.readdirSync(tipoPath).forEach(archivo => {
+                        const filePath = path.join(tipoPath, archivo);
+                        if (!fs.statSync(filePath).isFile()) return;
+
+                        const ext = path.extname(archivo).toLowerCase();
+                        if (!['.pdf', '.jpg', '.png', '.jpeg', '.docx'].includes(ext)) return;
+
+                        // Intentar extraer fecha del nombre (formatos comunes)
+                        let fecha = null;
+                        const fechaMatch = archivo.match(/(\d{4})-(\d{2})-(\d{2})/) || archivo.match(/(\d{4})(\d{2})(\d{2})/);
+                        if (fechaMatch) {
+                            fecha = `${fechaMatch[1]}-${fechaMatch[2]}-${fechaMatch[3]}`;
+                        }
+
+                        // Filtros por fecha
+                        if (anio && fecha && !fecha.startsWith(anio)) return;
+                        if (mes && fecha && fecha.split('-')[1] !== mes.padStart(2, '0')) return;
+                        if (dia && fecha && fecha.split('-')[2] !== dia.padStart(2, '0')) return;
+
+                        documentos.push({
+                            fecha: fecha || 'Sin fecha en nombre',
+                            sede: s,
+                            tipo: tipoCarpeta.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+                            documento: archivo,
+                            paciente_rut: rut,
+                            paciente_nombre: rut, // por ahora RUT, después podemos buscar nombre real
+                            url: `/documentos/${encodeURIComponent(s)}/${encodeURIComponent(rut)}/${encodeURIComponent(tipoCarpeta)}/${encodeURIComponent(archivo)}`
+                        });
+                    });
+                });
+            });
+        });
+
+        // Ordenar por fecha descendente (más reciente primero)
+        documentos.sort((a, b) => {
+            const fechaA = a.fecha || '0000-00-00';
+            const fechaB = b.fecha || '0000-00-00';
+            return fechaB.localeCompare(fechaA);
+        });
+
+        res.json(documentos);
+    } catch (err) {
+        console.error('Error al listar documentos:', err);
+        res.status(500).json({ error: 'Error al leer la carpeta de documentos' });
+    }
+});
 // Actualizar producto
 app.put('/api/productos/:id', (req, res) => {
     const id = req.params.id;
@@ -1341,6 +1449,7 @@ app.delete('/api/productos/:id', (req, res) => {
         res.json({ success: true });
     });
 });
+
 app.listen(port, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
     console.log('Usuario login por defecto: admin / evolucion2025');

@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fichaDetalle = document.getElementById('ficha-detalle');
     const closeFichaModal = document.querySelector('.close-modal-ficha');
     const btnCerrarFicha = document.querySelector('.cerrar-ficha');
+    
     let pacienteEditandoId = null;
 
     // === FUNCIONES PARA DOCUMENTO (RUT O EXTRANJERO) ===
@@ -1610,9 +1611,77 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-gestionar-pagos').style.display = 'none';
     }
 
-    document.getElementById('btn-consultar-pagos')?.addEventListener('click', () => {
-        alert('Módulo "Consultar Pagos" en desarrollo');
-    });
+    // Abrir sección Documentos Financieros
+document.getElementById('btn-documentos-financieros')?.addEventListener('click', () => {
+    document.querySelector('.botones-finanzas-grid').style.display = 'none';
+    document.getElementById('subseccion-documentos-financieros').style.display = 'block';
+
+   // Llenar años dinámicamente (si no lo tienes ya)
+const selectAnio = document.getElementById('filtro-anio-doc');
+if (selectAnio) {
+    selectAnio.innerHTML = '<option value="">Todos</option>';
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear + 1; y >= currentYear - 5; y--) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        selectAnio.appendChild(opt);
+    }
+}
+});
+
+// Volver a Finanzas (botón volver)
+function volverAreaFinanzas() {
+    document.getElementById('subseccion-documentos-financieros').style.display = 'none';
+    document.querySelector('.botones-finanzas-grid').style.display = 'grid';
+}
+
+// Buscar documentos
+document.getElementById('btn-buscar-documentos')?.addEventListener('click', async () => {
+    const sede = document.getElementById('filtro-sede-doc').value;
+    const tipo = document.getElementById('filtro-tipo-doc').value;
+    const anio = document.getElementById('filtro-anio-doc').value;
+    const mes = document.getElementById('filtro-mes-doc').value;
+    const dia = document.getElementById('filtro-dia-doc').value.trim();
+
+    const resultadoDiv = document.getElementById('resultado-documentos');
+    resultadoDiv.innerHTML = '<p style="text-align:center; color:#999;">Buscando documentos...</p>';
+
+    try {
+        let url = '/api/documentos-financieros?';
+        if (sede) url += `sede=${encodeURIComponent(sede)}&`;
+        if (tipo) url += `tipo=${encodeURIComponent(tipo)}&`;
+        if (anio) url += `anio=${encodeURIComponent(anio)}&`;
+        if (mes) url += `mes=${encodeURIComponent(mes)}&`;
+        if (dia) url += `dia=${encodeURIComponent(dia)}&`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.length === 0) {
+            resultadoDiv.innerHTML = '<p style="text-align:center; color:#999; padding:40px;">No se encontraron documentos con esos filtros.</p>';
+            return;
+        }
+
+        let html = '<table style="width:100%; border-collapse:collapse; margin-top:20px;"><thead><tr style="background:#5DADE2; color:white;"><th>Fecha</th><th>Sede</th><th>Tipo</th><th>Documento</th><th>Paciente</th><th>Acción</th></tr></thead><tbody>';
+        data.forEach(doc => {
+            html += `
+                <tr style="border-bottom:1px solid #ddd;">
+                    <td>${doc.fecha}</td>
+                    <td>${doc.sede}</td>
+                    <td>${doc.tipo}</td>
+                    <td>${doc.nombre_archivo}</td>
+                    <td>${doc.paciente_nombre || '-'}</td>
+                    <td><a href="${doc.url}" download class="btn-primary" style="padding:6px 12px;">Descargar</a></td>
+                </tr>`;
+        });
+        html += '</tbody></table>';
+        resultadoDiv.innerHTML = html;
+    } catch (err) {
+        resultadoDiv.innerHTML = '<p style="color:red; text-align:center; padding:40px;">Error al buscar documentos.</p>';
+        console.error(err);
+    }
+});
 
     // Listar detalle
 document.addEventListener('click', e => {
@@ -1925,57 +1994,62 @@ document.getElementById('btn-volver-resumen')?.addEventListener('click', () => {
                             return;
                         }
 
-                        // Subir archivos (comprobantes y facturas) - se mantiene igual
-                        const files = archivosPorFila.get(key);
-                        if (files && files.length > 0) {
-                            const formData = new FormData();
-                            files.forEach(file => formData.append('comprobantes', file));
-                            formData.append('pacienteId', id);
-                            try {
-                                const res = await fetch('/api/subir-comprobantes', { method: 'POST', body: formData });
-                                if (res.ok) {
-                                    const data = await res.json();
-                                    document.getElementById(`lista-comprobantes-${mes}-${año}`).innerHTML = '<strong>Subidos:</strong><br>' + data.files.map(f => `• ${f}`).join('<br>');
-                                    archivosPorFila.delete(key);
-                                } else {
-                                    alert('Error al subir comprobantes');
-                                }
-                            } catch (err) {
-                                alert('Error de conexión al subir comprobantes');
-                            }
-                        }
+                        // Subir comprobantes
+const files = archivosPorFila.get(key);
+if (files && files.length > 0) {
+    const formData = new FormData();
+    files.forEach(file => formData.append('comprobantes', file));
+    formData.append('pacienteId', id);
+    formData.append('año', año);           // ← AGREGADO
+    formData.append('mes', mes.padStart(2, '0')); // ← AGREGADO (01, 02, ..., 12)
 
-                        const keyFactura = 'factura-' + key;
-                        const filesFactura = archivosPorFila.get(keyFactura);
-                        if (filesFactura && filesFactura.length > 0) {
-                            const formDataFactura = new FormData();
-                            const mesNombre = getNombreMes(parseInt(año), parseInt(mes)).toUpperCase();
-                            const nombrePaciente = p.nombre.toUpperCase().replace(/[^A-Z0-9 ]/g, ' ').trim().replace(/\s+/g, '_');
-                            const nombreBase = `FACTURA_${nombrePaciente}_${mesNombre}`;
+    try {
+        const res = await fetch('/api/subir-comprobantes', {
+            method: 'POST',
+            body: formData
+        });
 
-                            filesFactura.forEach((file, index) => {
-                                const ext = file.name.split('.').pop() || 'pdf';
-                                const nombreFinal = index === 0 ? `${nombreBase}.${ext}` : `${nombreBase}_${index + 1}.${ext}`;
-                                const renamedFile = new File([file], nombreFinal, { type: file.type });
-                                formDataFactura.append('facturas', renamedFile);
-                            });
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById(`lista-comprobantes-${mes}-${año}`).innerHTML = '<strong>Subidos:</strong><br>' + 
+                data.files.map(f => `• ${f}`).join('<br>');
+            archivosPorFila.delete(key);
+        } else {
+            alert('Error al subir comprobantes');
+        }
+    } catch (err) {
+        alert('Error de conexión al subir comprobantes');
+    }
+}
 
-                            formDataFactura.append('pacienteId', id);
+// Subir facturas (igual)
+const keyFactura = 'factura-' + key;
+const filesFactura = archivosPorFila.get(keyFactura);
+if (filesFactura && filesFactura.length > 0) {
+    const formDataFactura = new FormData();
+    filesFactura.forEach(file => formDataFactura.append('facturas', file));
+    formDataFactura.append('pacienteId', id);
+    formDataFactura.append('año', año);           // ← AGREGADO
+    formDataFactura.append('mes', mes.padStart(2, '0')); // ← AGREGADO
 
-                            try {
-                                const resFactura = await fetch('/api/subir-facturas', { method: 'POST', body: formDataFactura });
-                                if (resFactura.ok) {
-                                    const dataFactura = await resFactura.json();
-                                    document.getElementById(`lista-facturas-${mes}-${año}`).innerHTML = '<strong>Subidas:</strong><br>' + 
-                                        dataFactura.files.map(f => `• ${f}`).join('<br>');
-                                    archivosPorFila.delete(keyFactura);
-                                } else {
-                                    alert('Error al subir facturas');
-                                }
-                            } catch (err) {
-                                alert('Error de conexión al subir facturas');
-                            }
-                        }
+    try {
+        const resFactura = await fetch('/api/subir-facturas', {
+            method: 'POST',
+            body: formDataFactura
+        });
+
+        if (resFactura.ok) {
+            const dataFactura = await resFactura.json();
+            document.getElementById(`lista-facturas-${mes}-${año}`).innerHTML = '<strong>Subidas:</strong><br>' + 
+                dataFactura.files.map(f => `• ${f}`).join('<br>');
+            archivosPorFila.delete(keyFactura);
+        } else {
+            alert('Error al subir facturas');
+        }
+    } catch (err) {
+        alert('Error de conexión al subir facturas');
+    }
+}
 
                         alert('Fila guardada con éxito. Ingreso sumado a Abonado.');
                     };
@@ -2705,5 +2779,6 @@ document.addEventListener('click', async (e) => {
         }
     }
 });
+
     console.log('Script.js cargado - Sistema Evolución Chile listo 🚀');
 });

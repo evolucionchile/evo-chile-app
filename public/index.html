@@ -906,8 +906,8 @@
                     <button class="btn-finanzas" id="btn-modificar-pago">
                         Modificar Pago
                     </button>
-                    <button class="btn-finanzas" id="btn-consultar-pagos">
-                        Consultar Pagos
+                    <button class="btn-finanzas" id="btn-documentos-financieros">
+                        Documentos Financieros
                     </button>
                    <button class="btn-finanzas" id="btn-ver-morosos">
                         Ver Morosos
@@ -925,6 +925,83 @@
                     </div>
 
                     <div id="resultados-modificar-pago"></div>
+                </div>
+                <!-- SUBSECCIÓN: DOCUMENTOS FINANCIEROS -->
+                <div id="subseccion-documentos-financieros" style="display:none; margin-top:30px;">
+                    <div class="card-finanzas">
+                        <div class="card-header">
+                            <h3>Documentos Financieros</h3>
+                        </div>
+
+                        <div class="card-body">
+                            <!-- Filtros -->
+                            <div class="filtros-row">
+                                <div class="filtro-item">
+                                    <label>Sede</label>
+                                    <select id="filtro-sede-doc">
+                                        <option value="">Todas las sedes</option>
+                                        <option value="Olea">Olea</option>
+                                        <option value="Naltahua">Naltahua</option>
+                                        <option value="Femenino uno">Femenino uno</option>
+                                        <option value="Femenino dos">Femenino dos</option>
+                                        <option value="Polpaico">Polpaico</option>
+                                        <option value="Buin">Buin</option>
+                                    </select>
+                                </div>
+
+                                <div class="filtro-item">
+                                    <label>Tipo de documento</label>
+                                    <select id="filtro-tipo-doc">
+                                        <option value="">Todos</option>
+                                        <option value="factura">Facturas</option>
+                                        <option value="comprobante">Comprobantes de Pago</option>
+                                        <option value="boleta">Boletas Emitidas</option>
+                                    </select>
+                                </div>
+
+                                <div class="filtro-item">
+                                    <label>Año</label>
+                                    <select id="filtro-anio-doc">
+                                        <option value="">Todos</option>
+                                        <!-- Se llena con JS -->
+                                    </select>
+                                </div>
+
+                                <div class="filtro-item">
+                                    <label>Mes</label>
+                                    <select id="filtro-mes-doc">
+                                        <option value="">Todos</option>
+                                        <option value="1">Enero</option>
+                                        <option value="2">Febrero</option>
+                                        <option value="3">Marzo</option>
+                                        <option value="4">Abril</option>
+                                        <option value="5">Mayo</option>
+                                        <option value="6">Junio</option>
+                                        <option value="7">Julio</option>
+                                        <option value="8">Agosto</option>
+                                        <option value="9">Septiembre</option>
+                                        <option value="10">Octubre</option>
+                                        <option value="11">Noviembre</option>
+                                        <option value="12">Diciembre</option>
+                                    </select>
+                                </div>
+
+                                <div class="filtro-item">
+                                    <label>Día</label>
+                                    <input type="number" id="filtro-dia-doc" min="1" max="31" placeholder="Todos">
+                                </div>
+
+                                <div class="filtro-item">
+                                    <button id="btn-buscar-documentos" class="btn-buscar">Buscar Documentos</button>
+                                </div>
+                            </div>
+
+                            <!-- Resultados -->
+                            <div id="resultado-documentos" class="resultado-container">
+                                <p class="mensaje-inicial">Realiza una búsqueda para ver los documentos financieros.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 

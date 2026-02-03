@@ -1877,3 +1877,152 @@ fieldset.fieldset-profesional legend{
 #btn-registrar-salida:hover {
     background: #e67e22;
 }
+/* ===================================== */
+/* SUBSECCIÓN DOCUMENTOS FINANCIEROS */
+/* ===================================== */
+
+.card-finanzas {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(93, 173, 226, 0.15);
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #5DADE2 0%, #3498DB 100%);
+    color: white;
+    padding: 25px 40px;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 40px;
+}
+
+.filtros-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    justify-content: center;
+    align-items: flex-end;
+    margin-bottom: 40px;
+}
+
+.filtro-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+}
+
+.filtro-item label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.filtro-item select,
+.filtro-item input[type="number"] {
+    padding: 14px 16px;
+    border: 2px solid #d1e8ff;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    background: #f9fcff;
+    transition: all 0.3s;
+}
+
+.filtro-item select:focus,
+.filtro-item input:focus {
+    border-color: #5DADE2;
+    box-shadow: 0 0 0 4px rgba(93, 173, 226, 0.15);
+    outline: none;
+}
+
+.btn-buscar {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 14px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.btn-buscar:hover {
+    background: #219653;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
+}
+
+.resultado-container {
+    background: #f8fbff;
+    border-radius: 12px;
+    padding: 30px;
+    border: 2px solid #e0e4f5;
+    min-height: 200px;
+}
+
+.mensaje-inicial {
+    text-align: center;
+    color: #777;
+    font-size: 1.3rem;
+    padding: 80px 0;
+}
+
+.tabla-documentos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.tabla-documentos th,
+.tabla-documentos td {
+    padding: 16px;
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tabla-documentos th {
+    background: #5DADE2;
+    color: white;
+    font-weight: 600;
+}
+
+.tabla-documentos td a.btn-descargar {
+    background: #3498db;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s;
+}
+
+.tabla-documentos td a.btn-descargar:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .filtros-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filtro-item {
+        width: 100%;
+    }
+    
+    .tabla-documentos th,
+    .tabla-documentos td {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+}
