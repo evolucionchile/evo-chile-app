@@ -604,27 +604,126 @@
                 </div>
             </section> 
 
-            <!-- PSIQUIATRÍA -->
-            <section id="seccion-psiquiatria" class="seccion-oculta">
-                <button class="btn-volver">← Menú Principal</button>
-                <div class="titulo-seccion">
-                    <h3>Control Psiquiátrico</h3>
-                </div>
-                <div class="container" style="text-align:center; padding:80px 20px;">
-                    <p style="font-size:1.6rem; color:#555; margin-bottom:30px;">
-                        🧠 Módulo de Psiquiatría
-                    </p>
-                    <p style="font-size:1.3rem; color:#888; line-height:1.8;">
-                        Sección en desarrollo<br><br>
-                        Aquí podrás gestionar:<br>
-                        • Consultas psiquiátricas<br>
-                        • Recetas médicas y control de medicamentos<br>
-                        • Licencias médicas<br>
-                        • Evolución del tratamiento psiquiátrico<br>
-                        • Alertas de renovación de recetas
-                    </p>
-                </div>
-            </section>
+            <!-- SECCIÓN: PSIQUIATRÍA -->
+<section id="seccion-psiquiatria" class="seccion-oculta">
+    <button class="btn-volver">← Volver al Menú</button>
+
+    <div class="titulo-seccion">
+        <h3>Gestión de Atención Psiquiátrica</h3>
+    </div>
+
+    <div class="filtros-psiquiatria">
+        <label>Sede</label>
+        <select id="filtro-sede-psiquiatria">
+            <option value="">Todas las sedes</option>
+            <option value="Olea">Olea</option>
+            <option value="Naltahua">Naltahua</option>
+            <option value="Femenino uno">Femenino uno</option>
+            <option value="Femenino dos">Femenino dos</option>
+            <option value="Polpaico">Polpaico</option>
+            <option value="Buin">Buin</option>
+        </select>
+
+        <button id="btn-buscar-psiquiatria" class="btn-primary">Buscar</button>
+    </div>
+
+    <!-- Lista de pacientes que necesitan atención -->
+    <div id="lista-pacientes-psiquiatria"></div>
+
+    <!-- Gestión de doctores -->
+    <div class="card">
+        <h4>Doctores</h4>
+        <table id="tabla-doctores">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Se llena con JS -->
+            </tbody>
+        </table>
+
+        <input type="text" id="nuevo-doctor-nombre" placeholder="Nombre del nuevo doctor">
+        <button id="btn-agregar-doctor" class="btn-primary">Agregar Doctor</button>
+    </div>
+
+    <!-- Agendar horas -->
+    <div class="card">
+        <h4>Agendar Hora</h4>
+        <select id="agendar-paciente"></select>
+        <select id="agendar-doctor"></select>
+        <input type="date" id="agendar-fecha">
+        <input type="time" id="agendar-hora">
+        <textarea id="agendar-descripcion" placeholder="Descripción"></textarea>
+        <button id="btn-agendar-hora" class="btn-primary">Agendar</button>
+    </div>
+
+    <!-- Ver agendamientos de la semana -->
+    <div class="card">
+        <h4>Agendamientos de la Semana</h4>
+        <select id="filtro-semana-psiquiatria"></select>
+        <select id="filtro-doctor-psiquiatria"></select>
+        <button id="btn-buscar-agendamientos" class="btn-primary">Buscar</button>
+        <table id="tabla-agendamientos">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Paciente</th>
+                    <th>Doctor</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Se llena con JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Ingresar recetas y licencias -->
+    <div class="card">
+        <h4>Ingresar Receta</h4>
+        <select id="receta-paciente"></select>
+        <select id="receta-doctor"></select>
+        <input type="date" id="receta-fecha-emision">
+        <input type="date" id="receta-fecha-termino">
+        <input type="file" id="receta-archivo">
+        <button id="btn-ingresar-receta" class="btn-primary">Guardar Receta</button>
+    </div>
+
+    <div class="card">
+        <h4>Ingresar Licencia</h4>
+        <select id="licencia-paciente"></select>
+        <select id="licencia-doctor"></select>
+        <input type="date" id="licencia-fecha-emision">
+        <input type="date" id="licencia-fecha-termino">
+        <input type="file" id="licencia-archivo">
+        <button id="btn-ingresar-licencia" class="btn-primary">Guardar Licencia</button>
+    </div>
+
+    <!-- Alertas de vencimientos -->
+    <div class="card">
+        <h4>Alertas de Vencimientos (próxima semana)</h4>
+        <select id="filtro-semana-alertas"></select>
+        <button id="btn-buscar-alertas" class="btn-primary">Buscar</button>
+        <table id="tabla-alertas">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Paciente</th>
+                    <th>Doctor</th>
+                    <th>Fecha Terminó</th>
+                    <th>Archivo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Se llena con JS -->
+            </tbody>
+        </table>
+    </div>
+</section>
 
             <!-- ELIMINAR MASIVO -->
             <section id="seccion-eliminar-masivo" class="seccion-oculta">
@@ -1004,7 +1103,106 @@
                     </div>
                 </div>
             </section>
+<!-- ===================== -->
+<!-- SECCIÓN DOCUMENTOS FINANCIEROS -->
+<!-- ===================== -->
+<section id="seccion-documentos-financieros" class="seccion-oculta">
+    <button class="btn-volver">← Menú Principal</button>
+    
+    <div class="titulo-seccion">
+        <h2>Documentos Financieros</h2>
+    </div>
 
+    <form id="form-busqueda-documentos" class="form-busqueda">
+        <div class="filtros-container">
+            <div class="filtro-item">
+                <label>Sede</label>
+                <select id="filtro-sede">
+                    <option value="todos">Todas las sedes</option>
+                    <!-- Puedes agregar opciones manuales o cargarlas dinámicamente -->
+                    <option value="Naltahua">Naltahua</option>
+                    <!-- Agrega más sedes según necesites -->
+                </select>
+            </div>
+
+            <div class="filtro-item">
+                <label>Usuario / RUT</label>
+                <input type="text" id="filtro-usuario" placeholder="Ej: 15697031K o dejar en blanco para todos" value="todos">
+            </div>
+
+            <div class="filtro-item">
+                <label>Tipo de documento</label>
+                <select id="filtro-tipo">
+                    <option value="todos">Todos</option>
+                    <option value="comprobantes_de_pago">Comprobantes de pago</option>
+                    <option value="facturas">Facturas</option>
+                    <!-- Agrega más tipos si existen -->
+                </select>
+            </div>
+
+            <div class="filtro-item">
+                <label>Año</label>
+                <select id="filtro-ano">
+                    <option value="todos">Todos</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <!-- Puedes generar años dinámicamente si prefieres -->
+                </select>
+            </div>
+
+            <div class="filtro-item">
+                <label>Mes</label>
+                <select id="filtro-mes">
+                    <option value="todos">Todos</option>
+                    <option value="enero">Enero</option>
+                    <option value="febrero">Febrero</option>
+                    <option value="marzo">Marzo</option>
+                    <option value="abril">Abril</option>
+                    <option value="mayo">Mayo</option>
+                    <option value="junio">Junio</option>
+                    <option value="julio">Julio</option>
+                    <option value="agosto">Agosto</option>
+                    <option value="septiembre">Septiembre</option>
+                    <option value="octubre">Octubre</option>
+                    <option value="noviembre">Noviembre</option>
+                    <option value="diciembre">Diciembre</option>
+                </select>
+            </div>
+
+            <div class="filtro-item">
+                <label>Día</label>
+                <select id="filtro-dia">
+                    <option value="todos">Todos</option>
+                    <option value="01">01</option>
+                    <option value="02">02</option>
+                    <!-- ... hasta 31 -->
+                    <option value="31">31</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-buscar">Buscar Documentos</button>
+    </form>
+
+    <div class="tabla-container">
+        <table id="tabla-documentos-financieros">
+            <thead>
+                <tr>
+                    <th>Sede</th>
+                    <th>RUT</th>
+                    <th>Tipo</th>
+                    <th>Año</th>
+                    <th>Mes</th>
+                    <th>Día</th>
+                    <th>Archivo</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
             <!-- MODAL PARA EDITAR PACIENTE -->
             <div id="edit-modal" class="modal">
                 <div class="modal-content">

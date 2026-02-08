@@ -4,16 +4,38 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
-const bodyParser = require('body-parser');  // ← Solo una vez aquí
+const bodyParser = require('body-parser');  // ← Asegúrate de que esté aquí (solo una vez)
+
+function ensureDirExists(dirPath) {
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+    }
+}
+
+function obtenerNombreMes(mes) {
+    const meses = [
+        'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+    ];
+    const m = parseInt(mes, 10);
+    return meses[m - 1] || 'mes_invalido';
+}
+
+function limpiarRutParaCarpeta(rut) {
+    if (!rut) return '';
+    return rut.replace(/[\.\-\s]/g, '').toUpperCase().trim();
+}
+
+
 
 const app = express();
-// Servir archivos estáticos (HTML, CSS, JS, imágenes)
-app.use(express.static('public'));  // si tienes carpeta public
-app.use(express.static(__dirname));  // sirve todo desde la raíz (más simple para tu caso)
 
-// Middlewares de body-parser (¡orden correcto!)
-app.use(bodyParser.json()); // para JSON normal
-app.use(bodyParser.urlencoded({ extended: true })); // para form-data texto
+// Middlewares OBLIGATORIOS - ¡ESTE ORDEN ES CLAVE!
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
+
 
 // Ruta raíz: sirve index.html directamente
 app.get('/', (req, res) => {
@@ -26,7 +48,7 @@ const documentosPath = path.join(__dirname, 'public', 'documentos');
 
 // Limpia RUT o documento: quita puntos, guion, espacios y convierte a mayúsculas
 function limpiarRutParaCarpeta(rut) {
-    if (!rut) return null;
+    if (!rut) return '';
     return rut.replace(/[\.\-\s]/g, '').toUpperCase().trim();
 }
 
@@ -953,105 +975,191 @@ app.put('/api/capacidades/:sede', (req, res) => {
     });
 });
 
-// MULTER PARA COMPROBANTES - Con año/mes y datos reales del paciente
-const storageComprobantes = multer.diskStorage({
-    destination: async (req, file, cb) => {
-        const { pacienteId, año, mes } = req.body;
+// ===============================
+// SUBIDA DOCUMENTOS FINANCIEROS (COMPROBANTES / FACTURAS)
+// -> Se suben a memoria y luego se guardan en:
+// public/documentos/[sede]/[rut]/[tipo]/[anio]/[mesNombre]/
+// ===============================
 
-        console.log('req.body recibido en comprobantes:', req.body); // ← Para depurar
+function normalizarSede(s) {
+    return (s || '').toString().trim().replace(/\s+/g, ' ');
+}
 
-        if (!pacienteId || !año || !mes) {
-            return cb(new Error('Faltan pacienteId, año o mes'));
+function obtenerAnioDesdeBody(body) {
+    // Maneja: año, anio, aÃ±o (encoding roto)
+    return (
+        body['año'] ??
+        body['anio'] ??
+        body['aÃ±o'] ??
+        body['aÃ±o'.toString()] ??
+        null
+    );
+}
+
+function obtenerMesDesdeBody(body) {
+    // Puede venir '02', 2, '2'
+    const m = body['mes'];
+    if (m === undefined || m === null || m === '') return null;
+    return parseInt(m, 10);
+}
+
+function safeFileName(originalname) {
+    return (originalname || 'archivo')
+        .toString()
+        .replace(/[^\w.\-\s]/g, '_')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function buildDirFinanciero({ sede, rut, tipo, anio, mes }) {
+    const sedeClean = normalizarSede(sede) || 'SinSede';
+    const rutClean = limpiarRutParaCarpeta(rut) || 'SinRut';
+    const anioClean = (anio ? String(anio).trim() : 'SinAnio');
+    const mesNombre = obtenerNombreMes(mes);
+
+    const dir = path.join(
+        __dirname,
+        'public',
+        'documentos',
+        sedeClean,
+        rutClean,
+        tipo,            // 'comprobantes_de_pago' o 'facturas'
+        anioClean,
+        mesNombre
+    );
+
+    ensureDirExists(dir);
+    return { dir, sedeClean, rutClean, anioClean, mesNombre };
+}
+
+// Multer en memoria SOLO para estos endpoints
+const uploadFinancieroMem = multer({ storage: multer.memoryStorage() });
+
+// --- SUBIR COMPROBANTES ---
+app.post('/api/subir-comprobantes', uploadFinancieroMem.array('comprobantes', 10), (req, res) => {
+    try {
+        console.log('SUBIR COMPROBANTES body:', req.body);
+
+        const pacienteId = req.body.pacienteId || req.body.paciente_id || null;
+        const anio = obtenerAnioDesdeBody(req.body);
+        const mes = obtenerMesDesdeBody(req.body);
+
+        if (!pacienteId) {
+            return res.status(400).json({ success: false, error: 'Falta pacienteId' });
+        }
+        if (!anio) {
+            return res.status(400).json({ success: false, error: 'Falta año/anio' });
+        }
+        if (!mes || mes < 1 || mes > 12) {
+            return res.status(400).json({ success: false, error: 'Mes inválido (1-12)' });
         }
 
-        db.get('SELECT sede, documento_numero FROM pacientes WHERE id = ?', [pacienteId], (err, row) => {
-            if (err || !row || !row.sede || !row.documento_numero) {
-                console.error('Error buscando paciente:', err);
-                return cb(new Error('Paciente no encontrado o sin sede/RUT'));
+        // Si el front NO manda sede/rut o vienen vacíos, los buscamos en la DB
+        const sedeBody = req.body.sede;
+        const rutBody = req.body.rut || req.body.rutPaciente;
+
+        db.get('SELECT documento_numero, sede FROM pacientes WHERE id = ?', [pacienteId], (err, row) => {
+            if (err || !row) {
+                console.error('Error buscando paciente para subir comprobantes:', err);
+                return res.status(404).json({ success: false, error: 'Paciente no encontrado' });
             }
 
-            const sede = row.sede;
-            const rut = row.documento_numero.replace(/[\.\-]/g, ''); // limpiar puntos y guiones
-            const tipo = 'comprobantes_de_pago';
-            const yearMonth = `${año}/${mes.padStart(2, '0')}`;
+            const sedeFinal = normalizarSede(sedeBody) || normalizarSede(row.sede);
+            const rutFinal = limpiarRutParaCarpeta(rutBody) || limpiarRutParaCarpeta(row.documento_numero);
 
-            const uploadPath = path.join(__dirname, 'public', 'documentos', sede, rut, tipo, yearMonth);
+            const { dir, sedeClean, rutClean, anioClean, mesNombre } = buildDirFinanciero({
+                sede: sedeFinal,
+                rut: rutFinal,
+                tipo: 'comprobantes_de_pago',
+                anio,
+                mes
+            });
 
-            fs.mkdirSync(uploadPath, { recursive: true });
+            const guardados = [];
+            (req.files || []).forEach((f, idx) => {
+                const name = `${Date.now()}-${idx + 1} - ${safeFileName(f.originalname)}`;
+                const fullPath = path.join(dir, name);
+                fs.writeFileSync(fullPath, f.buffer);
 
-            cb(null, uploadPath);
+                guardados.push({
+                    filename: name,
+                    path: fullPath,
+                    url: `/documentos/${encodeURIComponent(sedeClean)}/${encodeURIComponent(rutClean)}/comprobantes_de_pago/${encodeURIComponent(anioClean)}/${encodeURIComponent(mesNombre)}/${encodeURIComponent(name)}`
+                });
+            });
+
+            return res.json({ success: true, files: guardados });
         });
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        const nombreBase = `comprobante_${req.body.pacienteId}_${req.body.año}-${req.body.mes.padStart(2, '0')}`;
-        cb(null, `${nombreBase}${ext}`);
+
+    } catch (err) {
+        console.error('Error subir comprobantes:', err);
+        return res.status(500).json({ success: false, error: 'Error al subir comprobantes' });
     }
 });
 
-const uploadComprobantes = multer({ storage: storageComprobantes });
+// --- SUBIR FACTURAS ---
+app.post('/api/subir-facturas', uploadFinancieroMem.array('facturas', 10), (req, res) => {
+    try {
+        console.log('SUBIR FACTURAS body:', req.body);
 
-app.post('/api/subir-comprobantes', uploadComprobantes.array('comprobantes', 10), (req, res) => {
-    const files = req.files;
-    if (!files || files.length === 0) {
-        return res.status(400).json({ error: 'No se subieron archivos' });
-    }
+        const pacienteId = req.body.pacienteId || req.body.paciente_id || null;
+        const anio = obtenerAnioDesdeBody(req.body);
+        const mes = obtenerMesDesdeBody(req.body);
 
-    const uploadedFiles = files.map(file => file.filename);
-    console.log(`Comprobantes subidos:`, uploadedFiles);
-
-    res.json({ success: true, files: uploadedFiles });
-});
-
-// MULTER PARA FACTURAS (mismo cambio)
-const storageFacturas = multer.diskStorage({
-    destination: async (req, file, cb) => {
-        const { pacienteId, año, mes } = req.body;
-
-        console.log('req.body recibido en facturas:', req.body); // ← Para depurar
-
-        if (!pacienteId || !año || !mes) {
-            return cb(new Error('Faltan pacienteId, año o mes'));
+        if (!pacienteId) {
+            return res.status(400).json({ success: false, error: 'Falta pacienteId' });
+        }
+        if (!anio) {
+            return res.status(400).json({ success: false, error: 'Falta año/anio' });
+        }
+        if (!mes || mes < 1 || mes > 12) {
+            return res.status(400).json({ success: false, error: 'Mes inválido (1-12)' });
         }
 
-        db.get('SELECT sede, documento_numero FROM pacientes WHERE id = ?', [pacienteId], (err, row) => {
-            if (err || !row || !row.sede || !row.documento_numero) {
-                console.error('Error buscando paciente:', err);
-                return cb(new Error('Paciente no encontrado o sin sede/RUT'));
+        const sedeBody = req.body.sede;
+        const rutBody = req.body.rut || req.body.rutPaciente;
+
+        db.get('SELECT documento_numero, sede FROM pacientes WHERE id = ?', [pacienteId], (err, row) => {
+            if (err || !row) {
+                console.error('Error buscando paciente para subir facturas:', err);
+                return res.status(404).json({ success: false, error: 'Paciente no encontrado' });
             }
 
-            const sede = row.sede;
-            const rut = row.documento_numero.replace(/[\.\-]/g, '');
-            const tipo = 'facturas';
-            const yearMonth = `${año}/${mes.padStart(2, '0')}`;
+            const sedeFinal = normalizarSede(sedeBody) || normalizarSede(row.sede);
+            const rutFinal = limpiarRutParaCarpeta(rutBody) || limpiarRutParaCarpeta(row.documento_numero);
 
-            const uploadPath = path.join(__dirname, 'public', 'documentos', sede, rut, tipo, yearMonth);
+            const { dir, sedeClean, rutClean, anioClean, mesNombre } = buildDirFinanciero({
+                sede: sedeFinal,
+                rut: rutFinal,
+                tipo: 'facturas',
+                anio,
+                mes
+            });
 
-            fs.mkdirSync(uploadPath, { recursive: true });
+            const guardados = [];
+            (req.files || []).forEach((f, idx) => {
+                const name = `${Date.now()}-${idx + 1} - ${safeFileName(f.originalname)}`;
+                const fullPath = path.join(dir, name);
+                fs.writeFileSync(fullPath, f.buffer);
 
-            cb(null, uploadPath);
+                guardados.push({
+                    filename: name,
+                    path: fullPath,
+                    url: `/documentos/${encodeURIComponent(sedeClean)}/${encodeURIComponent(rutClean)}/facturas/${encodeURIComponent(anioClean)}/${encodeURIComponent(mesNombre)}/${encodeURIComponent(name)}`
+                });
+            });
+
+            return res.json({ success: true, files: guardados });
         });
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        const nombreBase = `factura_${req.body.pacienteId}_${req.body.año}-${req.body.mes.padStart(2, '0')}`;
-        cb(null, `${nombreBase}${ext}`);
+
+    } catch (err) {
+        console.error('Error subir facturas:', err);
+        return res.status(500).json({ success: false, error: 'Error al subir facturas' });
     }
 });
 
-const uploadFacturas = multer({ storage: storageFacturas });
 
-app.post('/api/subir-facturas', uploadFacturas.array('facturas', 10), (req, res) => {
-    const files = req.files;
-    if (!files || files.length === 0) {
-        return res.status(400).json({ error: 'No se subieron archivos' });
-    }
-
-    const uploadedFiles = files.map(file => file.filename);
-    console.log(`Facturas subidas:`, uploadedFiles);
-
-    res.json({ success: true, files: uploadedFiles });
-});
+// === INVENTARIO DE PRODUCTOS Y STOCK ===
 app.post('/api/productos', (req, res) => {
     const { nombre, unidad, minimo, proveedor, sedeInicial, stockInicial } = req.body;
 
@@ -1318,85 +1426,98 @@ app.get('/api/productos/:id', (req, res) => {
     });
 });
 
-// Endpoint para listar documentos reales desde public/documentos/[sede]/[rut]/[tipo]/
+// =============================================
+// BÚSQUEDA AVANZADA DE DOCUMENTOS FINANCIEROS
+// =============================================
 app.get('/api/documentos-financieros', (req, res) => {
-    const { sede, tipo, anio, mes, dia } = req.query;
+    const {
+        sede = 'todos',
+        usuario = 'todos',          // NUEVO: filtro por RUT o todos
+        tipo = 'todos',
+        ano = 'todos',
+        mes = 'todos',
+        dia = 'todos'
+    } = req.query;
 
     const baseDir = path.join(__dirname, 'public', 'documentos');
+    const resultados = [];
 
     try {
-        let documentos = [];
+        // Función auxiliar para recorrer la estructura
+        function buscarDocumentos(dir, currentSede = '', currentUsuario = '', currentTipo = '', currentAno = '', currentMes = '') {
+            if (!fs.existsSync(dir)) return;
 
-        // Sedes (si no se filtra, leer todas las carpetas de sedes)
-        const sedes = sede ? [sede] : fs.readdirSync(baseDir).filter(item => {
-            return fs.statSync(path.join(baseDir, item)).isDirectory();
-        });
+            const items = fs.readdirSync(dir, { withFileTypes: true });
 
-        sedes.forEach(s => {
-            const sedeDir = path.join(baseDir, s);
-            if (!fs.existsSync(sedeDir)) return;
+            items.forEach(item => {
+                const fullPath = path.join(dir, item.name);
 
-            // Recorrer carpetas de RUT (ej: 15697031K)
-            const ruts = fs.readdirSync(sedeDir).filter(item => {
-                return fs.statSync(path.join(sedeDir, item)).isDirectory();
-            });
-
-            ruts.forEach(rut => {
-                const rutDir = path.join(sedeDir, rut);
-                const tipos = fs.readdirSync(rutDir).filter(item => {
-                    return fs.statSync(path.join(rutDir, item)).isDirectory();
-                });
-
-                tipos.forEach(tipoCarpeta => {
-                    // Filtrar por tipo si se especifica
-                    if (tipo && tipoCarpeta.toLowerCase() !== tipo.toLowerCase()) return;
-
-                    const tipoPath = path.join(rutDir, tipoCarpeta);
-
-                    fs.readdirSync(tipoPath).forEach(archivo => {
-                        const filePath = path.join(tipoPath, archivo);
-                        if (!fs.statSync(filePath).isFile()) return;
-
-                        const ext = path.extname(archivo).toLowerCase();
-                        if (!['.pdf', '.jpg', '.png', '.jpeg', '.docx'].includes(ext)) return;
-
-                        // Intentar extraer fecha del nombre (formatos comunes)
-                        let fecha = null;
-                        const fechaMatch = archivo.match(/(\d{4})-(\d{2})-(\d{2})/) || archivo.match(/(\d{4})(\d{2})(\d{2})/);
-                        if (fechaMatch) {
-                            fecha = `${fechaMatch[1]}-${fechaMatch[2]}-${fechaMatch[3]}`;
+                if (item.isDirectory()) {
+                    // Nivel 1: Sede
+                    if (!currentSede) {
+                        if (sede === 'todos' || item.name.toLowerCase() === sede.toLowerCase()) {
+                            buscarDocumentos(fullPath, item.name);
                         }
+                        return;
+                    }
+                    // Nivel 2: Usuario / RUT
+                    if (!currentUsuario) {
+                        if (usuario === 'todos' || item.name.toLowerCase() === usuario.toLowerCase()) {
+                            buscarDocumentos(fullPath, currentSede, item.name);
+                        }
+                        return;
+                    }
+                    // Nivel 3: Tipo (comprobantes_de_pago, facturas, etc.)
+                    if (!currentTipo) {
+                        if (tipo === 'todos' || item.name.toLowerCase().includes(tipo.toLowerCase())) {
+                            buscarDocumentos(fullPath, currentSede, currentUsuario, item.name);
+                        }
+                        return;
+                    }
+                    // Nivel 4: Año
+                    if (!currentAno) {
+                        if (ano === 'todos' || item.name === ano) {
+                            buscarDocumentos(fullPath, currentSede, currentUsuario, currentTipo, item.name);
+                        }
+                        return;
+                    }
+                    // Nivel 5: Mes
+                    if (!currentMes) {
+                        if (mes === 'todos' || item.name.toLowerCase() === mes.toLowerCase()) {
+                            buscarDocumentos(fullPath, currentSede, currentUsuario, currentTipo, currentAno, item.name);
+                        }
+                        return;
+                    }
+                } 
+                // Es un archivo → nivel final
+                else if (currentMes) {
+                    // Filtro por día (asumiendo que el nombre contiene el día como 01, 15, etc.)
+                    let fileDia = null;
+                    const match = item.name.match(/(\d{1,2})/); // busca cualquier número de 1 o 2 dígitos
+                    if (match) fileDia = match[1].padStart(2, '0');
 
-                        // Filtros por fecha
-                        if (anio && fecha && !fecha.startsWith(anio)) return;
-                        if (mes && fecha && fecha.split('-')[1] !== mes.padStart(2, '0')) return;
-                        if (dia && fecha && fecha.split('-')[2] !== dia.padStart(2, '0')) return;
-
-                        documentos.push({
-                            fecha: fecha || 'Sin fecha en nombre',
-                            sede: s,
-                            tipo: tipoCarpeta.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-                            documento: archivo,
-                            paciente_rut: rut,
-                            paciente_nombre: rut, // por ahora RUT, después podemos buscar nombre real
-                            url: `/documentos/${encodeURIComponent(s)}/${encodeURIComponent(rut)}/${encodeURIComponent(tipoCarpeta)}/${encodeURIComponent(archivo)}`
+                    if (dia === 'todos' || (fileDia && fileDia === dia.padStart(2, '0'))) {
+                        resultados.push({
+                            sede: currentSede,
+                            usuario: currentUsuario,
+                            tipo: currentTipo,
+                            ano: currentAno,
+                            mes: currentMes,
+                            dia: fileDia || '—',
+                            archivo: item.name,
+                            url: `/documentos/${currentSede}/${currentUsuario}/${currentTipo}/${currentAno}/${currentMes}/${item.name}`
                         });
-                    });
-                });
+                    }
+                }
             });
-        });
+        }
 
-        // Ordenar por fecha descendente (más reciente primero)
-        documentos.sort((a, b) => {
-            const fechaA = a.fecha || '0000-00-00';
-            const fechaB = b.fecha || '0000-00-00';
-            return fechaB.localeCompare(fechaA);
-        });
+        buscarDocumentos(baseDir);
 
-        res.json(documentos);
+        res.json(resultados);
     } catch (err) {
-        console.error('Error al listar documentos:', err);
-        res.status(500).json({ error: 'Error al leer la carpeta de documentos' });
+        console.error('Error al buscar documentos:', err);
+        res.status(500).json({ error: 'Error al leer los documentos', detalle: err.message });
     }
 });
 // Actualizar producto
@@ -1449,7 +1570,187 @@ app.delete('/api/productos/:id', (req, res) => {
         res.json({ success: true });
     });
 });
+// GET doctores
+app.get('/api/doctores', (req, res) => {
+    db.all('SELECT * FROM doctores ORDER BY nombre', [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
 
+// POST nuevo doctor
+app.post('/api/doctores', (req, res) => {
+    const { nombre } = req.body;
+    if (!nombre) return res.status(400).json({ error: 'Nombre requerido' });
+
+    db.run('INSERT INTO doctores (nombre) VALUES (?)', [nombre], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: this.lastID });
+    });
+});
+
+// PUT editar doctor
+app.put('/api/doctores/:id', (req, res) => {
+    const { nombre } = req.body;
+    if (!nombre) return res.status(400).json({ error: 'Nombre requerido' });
+
+    db.run('UPDATE doctores SET nombre = ? WHERE id = ?', [nombre, req.params.id], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(404).json({ error: 'Doctor no encontrado' });
+        res.json({ success: true });
+    });
+});
+
+// DELETE doctor
+app.delete('/api/doctores/:id', (req, res) => {
+    db.run('DELETE FROM doctores WHERE id = ?', [req.params.id], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(404).json({ error: 'Doctor no encontrado' });
+        res.json({ success: true });
+    });
+});
+
+// GET pacientes que necesitan atención psiquiátrica por sede
+app.get('/api/pacientes-psiquiatria', (req, res) => {
+    const sede = req.query.sede || '';
+
+    let sql = `SELECT * FROM pacientes WHERE atencion_psiquiatrica IS NOT NULL AND atencion_psiquiatrica != ''`;
+    let params = [];
+
+    if (sede && sede != 'todas') {
+        sql += ` AND sede = ?`;
+        params.push(sede);
+    }
+
+    sql += ` ORDER BY sede, nombre`;
+
+    db.all(sql, params, (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// POST agendar hora
+app.post('/api/agendamientos', (req, res) => {
+    const { paciente_id, doctor_id, fecha, hora, descripcion } = req.body;
+
+    if (!paciente_id || !doctor_id || !fecha || !hora) return res.status(400).json({ error: 'Faltan datos obligatorios' });
+
+    db.run('INSERT INTO agendamientos (paciente_id, doctor_id, fecha, hora, descripcion) VALUES (?, ?, ?, ?, ?)', [paciente_id, doctor_id, fecha, hora, descripcion || null], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: this.lastID });
+    });
+});
+
+// GET agendamientos por sede, semana, doctor
+app.get('/api/agendamientos', (req, res) => {
+    const { sede, semana, doctor_id } = req.query;
+
+    let sql = `
+        SELECT a.*, p.nombre AS paciente_nombre, d.nombre AS doctor_nombre
+        FROM agendamientos a
+        JOIN pacientes p ON a.paciente_id = p.id
+        JOIN doctores d ON a.doctor_id = d.id
+        WHERE 1=1
+    `;
+    let params = [];
+
+    if (sede && sede != 'todas') {
+        sql += ` AND p.sede = ?`;
+        params.push(sede);
+    }
+
+    if (doctor_id) {
+        sql += ` AND a.doctor_id = ?`;
+        params.push(doctor_id);
+    }
+
+    if (semana) {
+        const [year, week] = semana.split('-W');
+        const startDate = new Date(year, 0, 1 + (week - 1) * 7);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 6);
+        sql += ` AND a.fecha BETWEEN ? AND ?`;
+        params.push(startDate.toISOString().slice(0,10));
+        params.push(endDate.toISOString().slice(0,10));
+    }
+
+    sql += ` ORDER BY a.fecha, a.hora`;
+
+    db.all(sql, params, (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// POST subir receta o licencia (usa multer para archivos)
+const uploadPsiquiatria = multer({ dest: 'uploads/psiquiatria' }); // ajusta la carpeta
+
+app.post('/api/recetas', uploadPsiquiatria.single('archivo'), (req, res) => {
+    const { paciente_id, doctor_id, fecha_emision, fecha_termino } = req.body;
+    const archivo = req.file ? req.file.path : null;
+
+    if (!paciente_id || !doctor_id || !fecha_emision || !fecha_termino) return res.status(400).json({ error: 'Faltan datos obligatorios' });
+
+    db.run('INSERT INTO recetas (paciente_id, doctor_id, fecha_emision, fecha_termino, archivo) VALUES (?, ?, ?, ?, ?)', [paciente_id, doctor_id, fecha_emision, fecha_termino, archivo], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: this.lastID });
+    });
+});
+
+app.post('/api/licencias', uploadPsiquiatria.single('archivo'), (req, res) => {
+    const { paciente_id, doctor_id, fecha_emision, fecha_termino } = req.body;
+    const archivo = req.file ? req.file.path : null;
+
+    if (!paciente_id || !doctor_id || !fecha_emision || !fecha_termino) return res.status(400).json({ error: 'Faltan datos obligatorios' });
+
+    db.run('INSERT INTO licencias (paciente_id, doctor_id, fecha_emision, fecha_termino, archivo) VALUES (?, ?, ?, ?, ?)', [paciente_id, doctor_id, fecha_emision, fecha_termino, archivo], function (err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: this.lastID });
+    });
+});
+
+// GET alertas de vencimientos (recetas y licencias en una semana)
+app.get('/api/alertas-psiquiatria', (req, res) => {
+    const { sede, semana } = req.query;
+
+    let sql = `
+        SELECT 'receta' AS tipo, r.*, p.nombre AS paciente_nombre, d.nombre AS doctor_nombre
+        FROM recetas r
+        JOIN pacientes p ON r.paciente_id = p.id
+        JOIN doctores d ON r.doctor_id = d.id
+        WHERE r.fecha_termino BETWEEN date('now') AND date('now', '+7 days')
+        UNION ALL
+        SELECT 'licencia' AS tipo, l.*, p.nombre AS paciente_nombre, d.nombre AS doctor_nombre
+        FROM licencias l
+        JOIN pacientes p ON l.paciente_id = p.id
+        JOIN doctores d ON l.doctor_id = d.id
+        WHERE l.fecha_termino BETWEEN date('now') AND date('now', '+7 days')
+    `;
+    let params = [];
+
+    if (sede && sede != 'todas') {
+        sql += ` AND p.sede = ?`;
+        params.push(sede);
+    }
+
+    if (semana) {
+        const [year, week] = semana.split('-W');
+        const startDate = new Date(year, 0, 1 + (week - 1) * 7);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 6);
+        sql += ` AND r.fecha_termino BETWEEN ? AND ?`;
+        params.push(startDate.toISOString().slice(0,10));
+        params.push(endDate.toISOString().slice(0,10));
+    }
+
+    sql += ` ORDER BY tipo, r.fecha_termino`;
+
+    db.all(sql, params, (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
 app.listen(port, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
     console.log('Usuario login por defecto: admin / evolucion2025');

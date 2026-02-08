@@ -2000,8 +2000,12 @@ if (files && files.length > 0) {
     const formData = new FormData();
     files.forEach(file => formData.append('comprobantes', file));
     formData.append('pacienteId', id);
-    formData.append('año', año);           // ← AGREGADO
-    formData.append('mes', mes.padStart(2, '0')); // ← AGREGADO (01, 02, ..., 12)
+    formData.append('año', año);
+    formData.append('mes', mes.padStart(2, '0'));
+    formData.append('sede', p.sede);
+    formData.append('rut', p.documento_numero.replace(/[\.\-]/g,'').toUpperCase());
+
+
 
     try {
         const res = await fetch('/api/subir-comprobantes', {
@@ -2779,6 +2783,412 @@ document.addEventListener('click', async (e) => {
         }
     }
 });
+// === MÓDULO PSIQUIATRÍA ===
 
+// Abrir sección Psiquiatría
+document.querySelector('.btn-menu[data-seccion="psiquiatria"]')?.addEventListener('click', () => {
+    document.querySelectorAll('section').forEach(sec => sec.style.display = 'none');
+    document.getElementById('seccion-psiquiatria').style.display = 'block';
+
+    // Cargar datos iniciales
+    cargarPacientesPsiquiatria();
+    cargarDoctores();
+    cargarPacientesSelect();
+    cargarDoctoresSelect();
+    llenarSemanas();
+});
+
+// Volver al menú principal
+document.querySelector('#seccion-psiquiatria .btn-volver')?.addEventListener('click', () => {
+    document.getElementById('seccion-psiquiatria').style.display = 'none';
+    document.getElementById('menu-principal').style.display = 'grid';
+});
+
+// 1. Cargar pacientes que necesitan atención psiquiátrica
+async function cargarPacientesPsiquiatria() {
+    const sede = document.getElementById('filtro-sede-psiquiatria')?.value || '';
+
+    try {
+        const res = await fetch(`/api/pacientes-psiquiatria?sede=${sede}`);
+        const pacientes = await res.json();
+
+        const container = document.getElementById('lista-pacientes-psiquiatria');
+        container.innerHTML = '<h4>Pacientes con Atención Psiquiátrica</h4>';
+
+        if (pacientes.length === 0) {
+            container.innerHTML += '<p>No hay pacientes que necesiten atención psiquiátrica en esta sede.</p>';
+            return;
+        }
+
+        const table = document.createElement('table');
+        table.className = 'tabla-pacientes-psiquiatria';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Sede</th>
+                    <th>Atención Psiquiátrica</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+
+        pacientes.forEach(p => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${p.nombre}</td>
+                <td>${p.sede}</td>
+                <td>${p.atencion_psiquiatrica || '-'}</td>
+            `;
+            table.querySelector('tbody').appendChild(row);
+        });
+
+        container.appendChild(table);
+    } catch (err) {
+        console.error('Error cargando pacientes psiquiatría:', err);
+        document.getElementById('lista-pacientes-psiquiatria').innerHTML = '<p>Error al cargar pacientes.</p>';
+    }
+}
+
+// Botón "Buscar" en filtros
+document.getElementById('btn-buscar-psiquiatria')?.addEventListener('click', cargarPacientesPsiquiatria);
+
+// 2. Cargar lista de doctores
+async function cargarDoctores() {
+    try {
+        const res = await fetch('/api/doctores');
+        const doctores = await res.json();
+
+        const table = document.getElementById('tabla-doctores').querySelector('tbody');
+        table.innerHTML = '';
+
+        doctores.forEach(d => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${d.nombre}</td>
+                <td>
+                    <button class="btn-editar-doctor" data-id="${d.id}">Editar</button>
+                    <button class="btn-eliminar-doctor" data-id="${d.id}">Eliminar</button>
+                </td>
+            `;
+            table.appendChild(row);
+        });
+    } catch (err) {
+        console.error('Error cargando doctores:', err);
+    }
+}
+
+// 3. Agregar doctor
+document.getElementById('btn-agregar-doctor')?.addEventListener('click', async () => {
+    const nombre = document.getElementById('nuevo-doctor-nombre').value.trim();
+    if (!nombre) return alert('Escribe un nombre');
+
+    try {
+        const res = await fetch('/api/doctores', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre })
+        });
+
+        if (res.ok) {
+            cargarDoctores();
+            document.getElementById('nuevo-doctor-nombre').value = '';
+        } else {
+            alert('Error al agregar doctor');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Error de conexión');
+    }
+});
+
+// 4. Editar/Eliminar doctores
+document.getElementById('tabla-doctores')?.addEventListener('click', async (e) => {
+    const btn = e.target;
+
+    if (btn.classList.contains('btn-editar-doctor')) {
+        const id = btn.dataset.id;
+        const nuevoNombre = prompt('Nuevo nombre del doctor:');
+        if (nuevoNombre) {
+            try {
+                const res = await fetch(`/api/doctores/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre: nuevoNombre })
+                });
+                if (res.ok) cargarDoctores();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    } else if (btn.classList.contains('btn-eliminar-doctor')) {
+        const id = btn.dataset.id;
+        if (confirm('¿Eliminar este doctor?')) {
+            try {
+                const res = await fetch(`/api/doctores/${id}`, { method: 'DELETE' });
+                if (res.ok) cargarDoctores();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    }
+});
+
+// 5. Cargar select de pacientes
+async function cargarPacientesSelect() {
+    try {
+        const res = await fetch('/api/pacientes-psiquiatria');
+        const pacientes = await res.json();
+
+        const selects = [
+            document.getElementById('agendar-paciente'),
+            document.getElementById('receta-paciente'),
+            document.getElementById('licencia-paciente')
+        ];
+
+        selects.forEach(select => {
+            select.innerHTML = '<option value="">Seleccionar paciente</option>';
+            pacientes.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.nombre;
+                select.appendChild(opt);
+            });
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// 6. Cargar select de doctores
+async function cargarDoctoresSelect() {
+    try {
+        const res = await fetch('/api/doctores');
+        const doctores = await res.json();
+
+        const selects = [
+            document.getElementById('agendar-doctor'),
+            document.getElementById('receta-doctor'),
+            document.getElementById('licencia-doctor')
+        ];
+
+        selects.forEach(select => {
+            select.innerHTML = '<option value="">Seleccionar doctor</option>';
+            doctores.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.textContent = d.nombre;
+                select.appendChild(opt);
+            });
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// 7. Llenar semanas para filtros
+function llenarSemanas() {
+    const currentYear = new Date().getFullYear();
+    const selectSemana = document.getElementById('filtro-semana-psiquiatria');
+    const selectAlertas = document.getElementById('filtro-semana-alertas');
+
+    [selectSemana, selectAlertas].forEach(select => {
+        select.innerHTML = '<option value="">Seleccionar semana</option>';
+        for (let week = 1; week <= 52; week++) {
+            const opt = document.createElement('option');
+            opt.value = `${currentYear}-W${week.toString().padStart(2, '0')}`;
+            opt.textContent = `Semana ${week} de ${currentYear}`;
+            select.appendChild(opt);
+        }
+    });
+}
+
+// 8. Agendar hora
+document.getElementById('btn-agendar-hora')?.addEventListener('click', async () => {
+    const paciente_id = document.getElementById('agendar-paciente').value;
+    const doctor_id = document.getElementById('agendar-doctor').value;
+    const fecha = document.getElementById('agendar-fecha').value;
+    const hora = document.getElementById('agendar-hora').value;
+    const descripcion = document.getElementById('agendar-descripcion').value.trim();
+
+    if (!paciente_id || !doctor_id || !fecha || !hora) {
+        return alert('Completa todos los campos obligatorios');
+    }
+
+    try {
+        const res = await fetch('/api/agendamientos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paciente_id, doctor_id, fecha, hora, descripcion })
+        });
+
+        if (res.ok) {
+            alert('Hora agendada correctamente');
+            document.getElementById('agendar-descripcion').value = '';
+        } else {
+            alert('Error al agendar hora');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Error de conexión');
+    }
+});
+
+// 9. Buscar agendamientos
+document.getElementById('btn-buscar-agendamientos')?.addEventListener('click', async () => {
+    const sede = document.getElementById('filtro-sede-psiquiatria').value;
+    const semana = document.getElementById('filtro-semana-psiquiatria').value;
+    const doctor_id = document.getElementById('filtro-doctor-psiquiatria').value;
+
+    try {
+        const res = await fetch(`/api/agendamientos?sede=${sede}&semana=${semana}&doctor_id=${doctor_id}`);
+        const data = await res.json();
+
+        const table = document.getElementById('tabla-agendamientos').querySelector('tbody');
+        table.innerHTML = '';
+
+        data.forEach(a => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${a.fecha}</td>
+                <td>${a.hora}</td>
+                <td>${a.paciente_nombre}</td>
+                <td>${a.doctor_nombre}</td>
+                <td>${a.descripcion || '-'}</td>
+            `;
+            table.appendChild(row);
+        });
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+// 10. Ingresar receta
+document.getElementById('btn-ingresar-receta')?.addEventListener('click', async () => {
+    const formData = new FormData();
+    formData.append('paciente_id', document.getElementById('receta-paciente').value);
+    formData.append('doctor_id', document.getElementById('receta-doctor').value);
+    formData.append('fecha_emision', document.getElementById('receta-fecha-emision').value);
+    formData.append('fecha_termino', document.getElementById('receta-fecha-termino').value);
+    formData.append('archivo', document.getElementById('receta-archivo').files[0]);
+
+    try {
+        const res = await fetch('/api/recetas', {
+            method: 'POST',
+            body: formData
+        });
+        if (res.ok) {
+            alert('Receta guardada correctamente');
+        } else {
+            alert('Error al guardar receta');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Error de conexión');
+    }
+});
+
+// 11. Ingresar licencia
+document.getElementById('btn-ingresar-licencia')?.addEventListener('click', async () => {
+    const formData = new FormData();
+    formData.append('paciente_id', document.getElementById('licencia-paciente').value);
+    formData.append('doctor_id', document.getElementById('licencia-doctor').value);
+    formData.append('fecha_emision', document.getElementById('licencia-fecha-emision').value);
+    formData.append('fecha_termino', document.getElementById('licencia-fecha-termino').value);
+    formData.append('archivo', document.getElementById('licencia-archivo').files[0]);
+
+    try {
+        const res = await fetch('/api/licencias', {
+            method: 'POST',
+            body: formData
+        });
+        if (res.ok) {
+            alert('Licencia guardada correctamente');
+        } else {
+            alert('Error al guardar licencia');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Error de conexión');
+    }
+});
+
+// 12. Buscar alertas de vencimientos
+document.getElementById('btn-buscar-alertas')?.addEventListener('click', async () => {
+    const sede = document.getElementById('filtro-sede-psiquiatria').value;
+    const semana = document.getElementById('filtro-semana-alertas').value;
+
+    try {
+        const res = await fetch(`/api/alertas-psiquiatria?sede=${sede}&semana=${semana}`);
+        const data = await res.json();
+
+        const table = document.getElementById('tabla-alertas').querySelector('tbody');
+        table.innerHTML = '';
+
+        data.forEach(a => {
+            const row = document.createElement('tr');
+            row.className = 'alerta-row';
+            row.innerHTML = `
+                <td>${a.tipo.toUpperCase()}</td>
+                <td>${a.paciente_nombre}</td>
+                <td>${a.doctor_nombre}</td>
+                <td>${a.fecha_termino}</td>
+                <td><a href="${a.archivo}" download>Descargar</a></td>
+            `;
+            table.appendChild(row);
+        });
+    } catch (err) {
+        console.error(err);
+    }
+});
+// =============================================
+// BÚSQUEDA DE DOCUMENTOS FINANCIEROS
+// =============================================
+document.getElementById('form-busqueda-documentos')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const sede    = document.getElementById('filtro-sede').value;
+    const usuario = document.getElementById('filtro-usuario').value.trim() || 'todos';
+    const tipo    = document.getElementById('filtro-tipo').value;
+    const ano     = document.getElementById('filtro-ano').value;
+    const mes     = document.getElementById('filtro-mes').value;
+    const dia     = document.getElementById('filtro-dia').value;
+
+    const params = new URLSearchParams({
+        sede, usuario, tipo, ano, mes, dia
+    });
+
+    try {
+        const response = await fetch(`/api/documentos-financieros?${params}`);
+        if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+        const documentos = await response.json();
+
+        const tbody = document.querySelector('#tabla-documentos-financieros tbody');
+        tbody.innerHTML = '';
+
+        if (documentos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">No se encontraron documentos con estos filtros.</td></tr>';
+        } else {
+            documentos.forEach(doc => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${doc.sede}</td>
+                    <td>${doc.usuario}</td>
+                    <td>${doc.tipo}</td>
+                    <td>${doc.ano}</td>
+                    <td>${doc.mes}</td>
+                    <td>${doc.dia}</td>
+                    <td>${doc.archivo}</td>
+                    <td><a href="${doc.url}" target="_blank" class="btn-ver">Ver / Descargar</a></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    } catch (error) {
+        console.error('Error al buscar documentos:', error);
+        alert('Error al buscar los documentos. Revisa la consola para más detalles.');
+    }
+});
     console.log('Script.js cargado - Sistema Evolución Chile listo 🚀');
 });

@@ -2026,3 +2026,50 @@ fieldset.fieldset-profesional legend{
         font-size: 0.95rem;
     }
 }
+/* ===================================== */
+/* PSIQUIATRÍA - DISEÑO PROFESIONAL */
+/* ===================================== */
+
+.card {
+    background: #f8fbff;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 2px solid #5DADE2;
+}
+
+.filtros-psiquiatria {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.filtros-psiquiatria select {
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #5DADE2;
+}
+
+#lista-pacientes-psiquiatria, #tabla-doctores, #tabla-agendamientos, #tabla-alertas {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#lista-pacientes-psiquiatria th, #lista-pacientes-psiquiatria td, #tabla-doctores th, #tabla-doctores td, #tabla-agendamientos th, #tabla-agendamientos td, #tabla-alertas th, #tabla-alertas td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+.alerta-row {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+#nuevo-doctor-nombre, #agendar-descripcion {
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #5DADE2;
+    margin-bottom: 10px;
+}
