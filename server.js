@@ -1430,94 +1430,89 @@ app.get('/api/productos/:id', (req, res) => {
 // BÚSQUEDA AVANZADA DE DOCUMENTOS FINANCIEROS
 // =============================================
 app.get('/api/documentos-financieros', (req, res) => {
-    const {
-        sede = 'todos',
-        usuario = 'todos',          // NUEVO: filtro por RUT o todos
-        tipo = 'todos',
-        ano = 'todos',
-        mes = 'todos',
-        dia = 'todos'
-    } = req.query;
+    const { sede = 'todos', usuario = 'todos', tipo = 'todos', anio = 'todos', mes = 'todos', dia = 'todos' } = req.query;
 
     const baseDir = path.join(__dirname, 'public', 'documentos');
     const resultados = [];
 
     try {
-        // Función auxiliar para recorrer la estructura
-        function buscarDocumentos(dir, currentSede = '', currentUsuario = '', currentTipo = '', currentAno = '', currentMes = '') {
-            if (!fs.existsSync(dir)) return;
+        const sedes = sede === 'todos' 
+            ? fs.readdirSync(baseDir).filter(f => fs.statSync(path.join(baseDir, f)).isDirectory())
+            : [sede];
 
-            const items = fs.readdirSync(dir, { withFileTypes: true });
+        for (const s of sedes) {
+            const sedePath = path.join(baseDir, s);
+            if (!fs.existsSync(sedePath)) continue;
 
-            items.forEach(item => {
-                const fullPath = path.join(dir, item.name);
+            const ruts = usuario === 'todos'
+                ? fs.readdirSync(sedePath).filter(f => fs.statSync(path.join(sedePath, f)).isDirectory())
+                : [usuario];
 
-                if (item.isDirectory()) {
-                    // Nivel 1: Sede
-                    if (!currentSede) {
-                        if (sede === 'todos' || item.name.toLowerCase() === sede.toLowerCase()) {
-                            buscarDocumentos(fullPath, item.name);
-                        }
-                        return;
-                    }
-                    // Nivel 2: Usuario / RUT
-                    if (!currentUsuario) {
-                        if (usuario === 'todos' || item.name.toLowerCase() === usuario.toLowerCase()) {
-                            buscarDocumentos(fullPath, currentSede, item.name);
-                        }
-                        return;
-                    }
-                    // Nivel 3: Tipo (comprobantes_de_pago, facturas, etc.)
-                    if (!currentTipo) {
-                        if (tipo === 'todos' || item.name.toLowerCase().includes(tipo.toLowerCase())) {
-                            buscarDocumentos(fullPath, currentSede, currentUsuario, item.name);
-                        }
-                        return;
-                    }
-                    // Nivel 4: Año
-                    if (!currentAno) {
-                        if (ano === 'todos' || item.name === ano) {
-                            buscarDocumentos(fullPath, currentSede, currentUsuario, currentTipo, item.name);
-                        }
-                        return;
-                    }
-                    // Nivel 5: Mes
-                    if (!currentMes) {
-                        if (mes === 'todos' || item.name.toLowerCase() === mes.toLowerCase()) {
-                            buscarDocumentos(fullPath, currentSede, currentUsuario, currentTipo, currentAno, item.name);
-                        }
-                        return;
-                    }
-                } 
-                // Es un archivo → nivel final
-                else if (currentMes) {
-                    // Filtro por día (asumiendo que el nombre contiene el día como 01, 15, etc.)
-                    let fileDia = null;
-                    const match = item.name.match(/(\d{1,2})/); // busca cualquier número de 1 o 2 dígitos
-                    if (match) fileDia = match[1].padStart(2, '0');
+            for (const rut of ruts) {
+                const rutPath = path.join(sedePath, rut);
+                if (!fs.existsSync(rutPath)) continue;
 
-                    if (dia === 'todos' || (fileDia && fileDia === dia.padStart(2, '0'))) {
-                        resultados.push({
-                            sede: currentSede,
-                            usuario: currentUsuario,
-                            tipo: currentTipo,
-                            ano: currentAno,
-                            mes: currentMes,
-                            dia: fileDia || '—',
-                            archivo: item.name,
-                            url: `/documentos/${currentSede}/${currentUsuario}/${currentTipo}/${currentAno}/${currentMes}/${item.name}`
-                        });
+                const tipos = tipo === 'todos'
+                    ? fs.readdirSync(rutPath).filter(f => fs.statSync(path.join(rutPath, f)).isDirectory())
+                    : [tipo];
+
+                for (const t of tipos) {
+                    const tipoPath = path.join(rutPath, t);
+                    if (!fs.existsSync(tipoPath)) continue;
+
+                    const anos = anio === 'todos'
+                        ? fs.readdirSync(tipoPath).filter(f => fs.statSync(path.join(tipoPath, f)).isDirectory())
+                        : [anio];
+
+                    for (const a of anos) {
+                        const anoPath = path.join(tipoPath, a);
+                        if (!fs.existsSync(anoPath)) continue;
+
+                        const meses = mes === 'todos'
+                            ? fs.readdirSync(anoPath).filter(f => fs.statSync(path.join(anoPath, f)).isDirectory())
+                            : [mes];
+
+                        for (const m of meses) {
+                            const mesPath = path.join(anoPath, m);
+                            if (!fs.existsSync(mesPath)) continue;
+
+                            const archivos = fs.readdirSync(mesPath).filter(f => {
+                                const stat = fs.statSync(path.join(mesPath, f));
+                                return stat.isFile() && ['.pdf','.jpg','.png','.jpeg','.docx'].includes(path.extname(f).toLowerCase());
+                            });
+
+                            for (const arch of archivos) {
+                                // Filtro por día (opcional: por nombre o por stat.mtime si prefieres)
+                                let fileDia = 'N/A';
+                                const match = arch.match(/(\d{1,2})/);
+                                if (match) fileDia = match[1].padStart(2, '0');
+
+                                if (dia !== 'todos' && fileDia !== dia.padStart(2, '0')) continue;
+
+                                resultados.push({
+                                    sede: s,
+                                    usuario: rut,
+                                    tipo: t,
+                                    ano: a,
+                                    mes: m,
+                                    dia: fileDia,
+                                    archivo: arch,
+                                    url: `/documentos/${encodeURIComponent(s)}/${encodeURIComponent(rut)}/${encodeURIComponent(t)}/${encodeURIComponent(a)}/${encodeURIComponent(m)}/${encodeURIComponent(arch)}`
+                                });
+                            }
+                        }
                     }
                 }
-            });
+            }
         }
 
-        buscarDocumentos(baseDir);
+        // Ordenar (opcional por nombre o fecha)
+        resultados.sort((a, b) => a.archivo.localeCompare(b.archivo));
 
         res.json(resultados);
     } catch (err) {
-        console.error('Error al buscar documentos:', err);
-        res.status(500).json({ error: 'Error al leer los documentos', detalle: err.message });
+        console.error(err);
+        res.status(500).json({ error: 'Error al leer documentos', detalle: err.message });
     }
 });
 // Actualizar producto
